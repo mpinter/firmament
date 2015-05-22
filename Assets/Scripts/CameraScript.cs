@@ -12,6 +12,14 @@ public class CameraScript : MonoBehaviour
     //click select
     public static float downTime;
 
+    private PlayerScript playerScript;
+    private MasterScript masterScript;
+
+    void Start()
+    {
+        playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerScript>();
+    }
+
 	void Update ()
 	{
 	    checkSelection();
@@ -29,6 +37,7 @@ public class CameraScript : MonoBehaviour
             if (Input.GetMouseButton(1))
             {
                 downTime += Time.deltaTime;
+                playerScript.performingAction = false;
             } 
             else if (Input.GetMouseButton(0))
             {
@@ -47,6 +56,12 @@ public class CameraScript : MonoBehaviour
             }
         }
         if (Input.GetMouseButtonUp(0))
+        {
+            lastClickPos = startClick;
+            startClick = -Vector3.one;
+            selection = new Rect(0, 0, 0, 0);
+        }
+        if (Input.GetMouseButtonUp(1))
         {
             lastClickPos = startClick;
             startClick = -Vector3.one;

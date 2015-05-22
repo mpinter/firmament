@@ -5,14 +5,19 @@ Body sa skrtaju miesto mazania koli dobremu pocitu :)
   
 ~~feature~~ - hotova  
 `feature` - druhorada/preskocena koli deadlineu/hlupost  
-**feature** - reminder sam pre seba - ffs, toto sprav uz konecne, nestihas  
-  
-* selecting units (box & click)
+**feature** - major/time consuming features
+
+* create marker as child for every unit
+* move in unitscript  
+* ~~selecting units (box & click)~~
 * rightclicks
-* moving selected ones
+* moving selected units
 * camera
-* selection gui (markers for different zoom levels, use unity gui)
+* selection gui (markers for different zoom levels, use unity gui ??)
 * cleanup camera script (onGui)
+* **attacking - circlecast stuff**
+* **fog of war**
+* **pathfinding**
 
 
 # Code Reference
@@ -34,4 +39,8 @@ Skladuje Unity componenty, robi ich public (skaredy styl, rychlejsie kodenie).
 
 ## Selecting Units
 
-Rect select and clicks separately.
+Rect select and clicks separately. TODO document moar
+
+## Marker
+
+Pamata si vsetky unity co su na neho smerovane
