@@ -54,6 +54,7 @@
      <Compile Include="Assets\Scripts\MasterScript.cs" />
      <Compile Include="Assets\Scripts\MonoComponents.cs" />
      <Compile Include="Assets\Scripts\PlayerScript.cs" />
+     <Compile Include="Assets\Scripts\UnitRaycastScript.cs" />
      <Compile Include="Assets\Scripts\UnitScript.cs" />
      <Compile Include="Assets\Scripts\UnitSelectionScript.cs" />
  <Reference Include="UnityEngine.UI">

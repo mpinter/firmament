@@ -1,26 +1,23 @@
 # TODO
 
 Reference guide nasleduje za TODO listom  
-Body sa skrtaju miesto mazania koli dobremu pocitu :)  
-  
-~~feature~~ - hotova  
-`feature` - druhorada/preskocena koli deadlineu/hlupost  
-**feature** - major/time consuming features
 
+* projectiles - particle system yay
+* while we're at particles - miner transform + actual mining (remember mining place and get dropoff from force script)
+* **attack move**
+* debug deceleration when in mood
+* push markers out of planet radii
+* multiple weapon semafor cooldown
 * overshoot on turn
-* turn speed zavisli od radiusu
-* create marker as child for every unit
-* move in unitscript  
-* ~~selecting units (box & click)~~
-* rightclicks
-* moving selected units
-* camera
 * selection gui (markers for different zoom levels, use unity gui ??)
 * cleanup camera script (onGui)
 * **attacking - circlecast stuff**
 * **fog of war**
 * **pathfinding**
 
+#### Bugs
+
+* 
 
 # Code Reference
 

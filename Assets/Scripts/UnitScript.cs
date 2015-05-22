@@ -10,6 +10,7 @@ public class UnitScript : MonoComponents
     public bool isStructure = false;
     public bool capital = true;
 
+    public int hp = 500;
     public float shootDist = 10.0f;
     public float followDist = 10.0f;
     public float speed = 0.05f;
@@ -20,15 +21,28 @@ public class UnitScript : MonoComponents
     public float rotateSpeed = 1.0f;
     private float overshootMin = 0.0f;
 
-    public int owner;
+    public float planetRadius = 5.0f;
+
+    public bool avoiding = false;
+    public bool lockOn = true;
+    public float avoidRotate;
+    public int enemiesLayerMask; //all - 16711680
+
+    public int owner=0;
     public List<MarkerScript> targetScriptList;
     public MarkerScript markerScript; //todo create marker as child for every unit
 
 	// Use this for initialization
 	void Start () {
         Init();
-        //todo change owner based on real owner
-	    owner = 0;
+	    //enemiesLayerMask = 16711680 - (1 << (owner+16));
+	    enemiesLayerMask = 0;
+	    for (int i = 0; i < 8; i++)
+	    {
+	        if (i == owner) continue;
+	        enemiesLayerMask += 1 << (i + 16);
+	    }
+        //todo this can be null and add AI
         playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerScript>();
         GameObject marker = Instantiate(Resources.Load("Prefabs/Marker", typeof(GameObject)), Vector3.zero, Quaternion.identity) as GameObject;
         marker.transform.parent = transform;
@@ -77,7 +91,6 @@ public class UnitScript : MonoComponents
                         }
                         else
                         {
-                            checkSpeed();
                             Move(targetScriptList[0].positions[gameObject].generateNewTargetPosition(),
                                 targetScriptList[0].positions[gameObject].getTurnSpeedModifier(transform.position));
                         }
@@ -92,10 +105,13 @@ public class UnitScript : MonoComponents
                     }
                 }
             }
+            else if (avoiding)
+            {
+                Avoid();
+            }
             else
             {
                 Debug.DrawLine(transform.position, targetScriptList[0].positions[gameObject].getTargetPosition());
-                checkSpeed();
                 Move(targetScriptList[0].positions[gameObject].getTargetPosition(), targetScriptList[0].positions[gameObject].getTurnSpeedModifier(transform.position));
             }
             
@@ -157,8 +173,17 @@ public class UnitScript : MonoComponents
         transform.position = next;
     }
 
+    private void Avoid()
+    {
+        checkSpeed();
+        float angle = avoidRotate;
+        transform.rotation = transform.rotation * Quaternion.Euler(0, 0, angle);
+        transform.position += transform.up * speed;
+    }
+
     private void Move(Vector3 where, float turnModifier)
     {
+        checkSpeed();
         Vector3 targetDir = Vector3.Normalize(where - transform.position);
         Vector3 forward = transform.up;
         float angle = Vector3.Angle(targetDir, forward);
@@ -190,14 +215,30 @@ public class UnitScript : MonoComponents
         transform.position += transform.up*speed;
     }
 
+    public void checkLife()
+    {
+        //todo add fancy explosion, ondestroy event
+        if (hp<0) Destroy(gameObject);
+    }
+
     public void select()
     {
+        if (playerScript == null)
+        {
+            Debug.Log("slecting what you should not");
+            return;
+        }
         playerScript.selected.Add(gameObject);
         renderer.color = Color.red;
     }
 
     public void unselect()
     {
+        if (playerScript == null)
+        {
+            Debug.Log("slecting what you should not");
+            return;
+        }
         unselect_noremove();
         playerScript.selected.Remove(gameObject);
     }

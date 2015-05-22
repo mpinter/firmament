@@ -14,12 +14,10 @@ public class CameraZoomScript : MonoBehaviour {
     public float keyScrollSpeed = 10.0f;
     public float mouseScrollSpeed = 5.0f;
 
-	// Use this for initialization
 	void Start () {
         targetOrtho = Camera.main.orthographicSize;
 	}
 	
-	// Update is called once per frame
 	void Update () {
         if (Input.GetAxis("Mouse ScrollWheel") < 0) // forward
          {

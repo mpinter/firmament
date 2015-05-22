@@ -13,6 +13,7 @@ public class MarkerScript : MonoComponents {
     public class Position
     {
         public bool follow;
+        public bool attack;
         public bool isset;
 
         private Transform markerPos;
@@ -36,7 +37,7 @@ public class MarkerScript : MonoComponents {
                 isCircular = whereScript.isStructure;
                 follow = !isCircular;
             }
-            Debug.Log(follow);
+            speed = whichScript.speedMax;
             isset = false;
         }
 
@@ -57,7 +58,7 @@ public class MarkerScript : MonoComponents {
             isset = true;
             if (isCircular)
             {
-                angle += speed*radius;
+                angle += speed*radius*Time.deltaTime;
                 return getTargetPosition();
             }
             else if (isAgile)
@@ -133,6 +134,22 @@ public class MarkerScript : MonoComponents {
     {
         Init();
         capitalCount = 0;
+    }
+
+    public void assignFront(GameObject obj)
+    {
+        //forced - rewrites if record exists
+        obj.GetComponent<UnitScript>().targetScriptList.Insert(0,this);
+        positions[obj] = new Position(obj, parentScript, gameObject.GetComponent<Transform>());
+        if (obj.GetComponent<UnitScript>().capital)
+        {
+            capitalCount++;
+            generateCapitals(Vector3.Normalize(gameObject.GetComponent<Transform>().position - obj.GetComponent<Transform>().position));
+        }
+        else
+        {
+            positions[obj].generateNewTargetPosition();
+        }
     }
 
     public void assign(GameObject obj,bool additive)

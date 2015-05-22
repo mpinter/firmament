@@ -77,6 +77,7 @@ public class PlayerScript : ForcesScript {
             if (unit.GetComponent<UnitScript>().owner == id && unit.GetComponent<UnitScript>().markerScript!=target)
             {
                 target.assign(unit.gameObject,additive);
+                if (target.parentScript!=null && target.parentScript.owner != id) target.positions[unit.gameObject].attack = true;
             }
         }
     }
