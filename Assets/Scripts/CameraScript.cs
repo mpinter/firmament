@@ -28,6 +28,7 @@ public class CameraScript : MonoBehaviour
     //done following a tutorial -> https://www.youtube.com/watch?v=2wgeDQlwnQ0
     private void checkSelection()
     {
+        if (Input.GetMouseButtonDown(0) && !playerScript.performingAction) playerScript.unselectAll(); //ugly haxxor - maybe place elsewhere?
         if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
         {
             startClick = new Vector3(Input.mousePosition.x, Input.mousePosition.y,10f);

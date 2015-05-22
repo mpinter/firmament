@@ -1,21 +1,27 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class UnitScript : MonoComponents
 {
     private PlayerScript playerScript;
 
-    public bool agile = true;
+    public bool agile = false;
     public bool isStructure = false;
-    public bool capital = false;
+    public bool capital = true;
 
-    public float shootDist = 1.0f;
+    public float shootDist = 10.0f;
+    public float followDist = 10.0f;
     public float speed = 0.05f;
+    public float speedMax = 0.05f;
+    public float speedMin = 0.02f;
+    public float acceleration = 0.001f;
+    public float deceleration = 0.001f;
     public float rotateSpeed = 1.0f;
     private float overshootMin = 0.0f;
 
     public int owner;
-    public MarkerScript targetScript;
+    public List<MarkerScript> targetScriptList;
     public MarkerScript markerScript; //todo create marker as child for every unit
 
 	// Use this for initialization
@@ -24,51 +30,131 @@ public class UnitScript : MonoComponents
         //todo change owner based on real owner
 	    owner = 0;
         playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerScript>();
-        GameObject marker = Instantiate(Resources.Load("Prefabs/Marker",typeof(GameObject))) as GameObject;
+        GameObject marker = Instantiate(Resources.Load("Prefabs/Marker", typeof(GameObject)), Vector3.zero, Quaternion.identity) as GameObject;
         marker.transform.parent = transform;
+	    marker.transform.localPosition = Vector3.zero;
 	    markerScript = marker.GetComponent<MarkerScript>();
 	    markerScript.parentScript = this;
         //todo this is for test only - if agile create local marker
 	    if (agile)
 	    {
-            marker = Instantiate(Resources.Load("Prefabs/Marker", typeof(GameObject))) as GameObject;
-            marker.GetComponent<MarkerScript>().assign(gameObject);
+            marker = Instantiate(Resources.Load("Prefabs/Marker", typeof(GameObject)),Vector3.zero,Quaternion.identity) as GameObject;
+            marker.GetComponent<MarkerScript>().assign(gameObject,false);
 	    }
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	void FixedUpdate () {
 	    checkMove();
 	}
 
     private void checkMove()
     {
-        if (targetScript == null)
+        if (targetScriptList.Count==0)
         {
             if (agile) Debug.Log("Agile no Marker!!??");
+            checkSpeed();
+            transform.position += transform.up * speed;
         }
         else
         {
             if (
-                Vector3.Distance(targetScript.positions[gameObject].getTargetPosition(),
+                Vector3.Distance(targetScriptList[0].positions[gameObject].getTargetPosition(),
                     gameObject.GetComponent<Transform>().position) < 1.0f)
             {
-                if (agile)
+                if (targetScriptList.Count > 1)
                 {
-                    Move(targetScript.positions[gameObject].generateNewTargetPosition(), targetScript.positions[gameObject].getTurnSpeedModifier(transform.position));
+                    targetScriptList[0].unassign(gameObject);
+                    checkMove();
                 }
                 else
                 {
-                    targetScript.unassign(gameObject);
+                    if (agile)
+                    {
+                        if (targetScriptList[0].positions[gameObject].isCircular)
+                        {
+                            Orbit(targetScriptList[0].positions[gameObject].generateNewTargetPosition());
+                        }
+                        else
+                        {
+                            checkSpeed();
+                            Move(targetScriptList[0].positions[gameObject].generateNewTargetPosition(),
+                                targetScriptList[0].positions[gameObject].getTurnSpeedModifier(transform.position));
+                        }
+                    }
+                    else
+                    {
+                        if (!targetScriptList[0].positions[gameObject].follow)
+                        {
+                            targetScriptList[0].unassign(gameObject);
+                            checkMove();
+                        }
+                    }
                 }
             }
             else
             {
-                Debug.DrawLine(transform.position,targetScript.positions[gameObject].getTargetPosition());
-                Move(targetScript.positions[gameObject].getTargetPosition(), targetScript.positions[gameObject].getTurnSpeedModifier(transform.position));
+                Debug.DrawLine(transform.position, targetScriptList[0].positions[gameObject].getTargetPosition());
+                checkSpeed();
+                Move(targetScriptList[0].positions[gameObject].getTargetPosition(), targetScriptList[0].positions[gameObject].getTurnSpeedModifier(transform.position));
             }
-            //todo shooting optimization
+            
         }
+    }
+
+    private void checkSpeed()
+    {
+        if (targetScriptList.Count==0)
+        {
+            speedDown();
+        }
+        else if (targetScriptList[0].positions[gameObject].follow)
+        {
+            float keepDist = (targetScriptList[0].parentScript.owner == owner) ? followDist : shootDist;
+            Debug.Log(keepDist);
+            if (Vector3.Distance(targetScriptList[0].positions[gameObject].getTargetPosition(), transform.position) <
+                keepDist)
+            {
+                speedDown();
+            }
+            else
+            {
+                speedUp();
+            }
+        }
+        else
+        {
+            speedUp();
+        }
+    }
+
+    private void speedUp()
+    {
+        speed += acceleration;
+        if (speed > speedMax) speed = speedMax;
+        deceleration = acceleration;
+    }
+
+    private void speedDown()
+    {
+        deceleration += acceleration;
+        speed -= deceleration;
+        if (speed < 0f) speed = 0f;
+        if (targetScriptList.Count > 0 && agile && speed < speedMin)
+        {
+            speed = speedMin;
+            deceleration = acceleration;
+        }
+    }
+
+    private void Orbit(Vector3 next)
+    {
+        Vector3 targetDir = Vector3.Normalize(next - transform.position);
+        Vector3 forward = transform.up;
+        float angle = Vector3.Angle(targetDir, forward);
+        if (Vector3.Cross(forward, targetDir).z < 0f) angle = -angle;
+        transform.rotation = transform.rotation * Quaternion.Euler(0, 0, angle);
+        transform.position = next;
     }
 
     private void Move(Vector3 where, float turnModifier)

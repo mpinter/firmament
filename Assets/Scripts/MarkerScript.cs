@@ -17,9 +17,9 @@ public class MarkerScript : MonoComponents {
 
         private Transform markerPos;
         private Vector3 pos;
-        private bool isCircular;
+        public bool isCircular;
         private float angle = 0.0f;
-        private float speed = 0.1f;
+        private float speed = 0.001f;
         private float radius = 5.0f; //todo set in contructor (for planets and stuff, later add boolean if supposed to scale)
         private bool isAgile;
 
@@ -57,7 +57,7 @@ public class MarkerScript : MonoComponents {
             isset = true;
             if (isCircular)
             {
-                angle += speed;
+                angle += speed*radius;
                 return getTargetPosition();
             }
             else if (isAgile)
@@ -135,11 +135,25 @@ public class MarkerScript : MonoComponents {
         capitalCount = 0;
     }
 
-    public void assign(GameObject obj)
+    public void assign(GameObject obj,bool additive)
     {
         if (positions.ContainsKey(obj)) return;
-        if (obj.GetComponent<UnitScript>().targetScript!=null) obj.GetComponent<UnitScript>().targetScript.unassign(obj);
-        obj.GetComponent<UnitScript>().targetScript = this;
+        if (additive)
+        {
+            obj.GetComponent<UnitScript>().targetScriptList.Add(this);  
+        }
+        else
+        {
+            if (obj.GetComponent<UnitScript>().targetScriptList.Count > 0)
+            {
+                foreach (var targetScript in obj.GetComponent<UnitScript>().targetScriptList)
+                {
+                    targetScript.unassign_noremove(obj);    
+                }
+                obj.GetComponent<UnitScript>().targetScriptList.Clear();
+            }
+            obj.GetComponent<UnitScript>().targetScriptList.Add(this);    
+        }
         positions.Add(obj,new Position(obj,parentScript,gameObject.GetComponent<Transform>()));
         if (obj.GetComponent<UnitScript>().capital)
         {
@@ -159,6 +173,17 @@ public class MarkerScript : MonoComponents {
         {
             capitalCount--;
         }
+        obj.GetComponent<UnitScript>().targetScriptList.Remove(this);
         if (positions.Count==0 && parentScript==null) Destroy(gameObject);
+    }
+
+    public void unassign_noremove(GameObject obj)
+    {
+        positions.Remove(obj);
+        if (obj.GetComponent<UnitScript>().capital)
+        {
+            capitalCount--;
+        }
+        if (positions.Count == 0 && parentScript == null) Destroy(gameObject);
     }
 }
