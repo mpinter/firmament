@@ -25,7 +25,7 @@ public class PlayerScript : ForcesScript {
     void LateUpdate()
     {
         //todo pretify
-        if (Input.GetMouseButtonUp(0) && (CameraScript.downTime < 0.3f) && !selectHit && !performingAction)
+        if (Input.GetMouseButtonUp(0) && (CameraScript.downTime < 0.1f) && !selectHit && !performingAction)
         {
             //todo
             foreach (var unit in selected)
@@ -34,12 +34,12 @@ public class PlayerScript : ForcesScript {
             }
             selected.Clear();
         }
-        if (Input.GetMouseButtonUp(1) && (CameraScript.downTime < 0.3f) && !selectHit && selected.Count>0 && !performingAction)
+        if (Input.GetMouseButtonUp(1) && (CameraScript.downTime < 0.1f) && !selectHit && selected.Count>0 && !performingAction)
         {
             //todo markers display only if their linked units are selected - check this on slection change - gethashcode
             GameObject marker = (GameObject)Instantiate(Resources.Load("Prefabs/Marker", typeof(GameObject)));
             marker.GetComponent<Transform>().position = Camera.main.ScreenToWorldPoint(CameraScript.lastClickPos);
-            setTarget(marker);
+            setTarget(marker.GetComponent<MarkerScript>());
         }
         selectHit = false;
     }
@@ -66,20 +66,20 @@ public class PlayerScript : ForcesScript {
         //todo - for now only moving, add attack, mining and stuff
          if (obj.tag == "Selectable")
         {
-            setTarget(obj);
+            setTarget(obj.GetComponent<UnitScript>().markerScript);
             selectHit = true;
         }
     }
 
-    private void setTarget(GameObject target)
+    private void setTarget(MarkerScript target)
     {
         foreach (var unit in selected)
         {
             if (unit.GetComponent<UnitScript>().owner == id)
             {
                 //todo late at night , check this with working mind (cuz right now rhymes are nigh)
-                target.GetComponent<UnitScript>().markerScript.assign(unit.gameObject);
-                unit.GetComponent<UnitScript>().targetScript = target.GetComponent<UnitScript>().markerScript;
+                target.assign(unit.gameObject);
+                //unit.GetComponent<UnitScript>().targetScript = target.GetComponent<UnitScript>().markerScript;
             }
         }
     }

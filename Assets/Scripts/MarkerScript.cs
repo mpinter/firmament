@@ -8,7 +8,7 @@ public class MarkerScript : MonoComponents {
 
     public Dictionary<GameObject,Position> positions=new Dictionary<GameObject, Position>();
     private int capitalCount;
-    private UnitScript parentScript=null;
+    public UnitScript parentScript=null;
 
     public class Position
     {
@@ -20,7 +20,7 @@ public class MarkerScript : MonoComponents {
         private bool isCircular;
         private float angle = 0.0f;
         private float speed = 0.1f;
-        private float radius = 1.0f; //todo set in contructor (for planets and stuff, later add boolean if supposed to scale)
+        private float radius = 5.0f; //todo set in contructor (for planets and stuff, later add boolean if supposed to scale)
         private bool isAgile;
 
         public Position(GameObject which, UnitScript whereScript,Transform mt)
@@ -36,6 +36,7 @@ public class MarkerScript : MonoComponents {
                 isCircular = whereScript.isStructure;
                 follow = !isCircular;
             }
+            Debug.Log(follow);
             isset = false;
         }
 
@@ -61,9 +62,8 @@ public class MarkerScript : MonoComponents {
             }
             else if (isAgile)
             {
-                pos = (follow) ? Vector2.zero : Random.insideUnitCircle ;
-                pos += markerPos.position;
-                return pos;
+                pos = (follow) ? Vector2.zero : Random.insideUnitCircle*radius ;
+                return pos + markerPos.position;
             }
             else if (follow)
             {
@@ -84,6 +84,18 @@ public class MarkerScript : MonoComponents {
             pos = position;
         }
 
+
+        public float getTurnSpeedModifier(Vector3 unitPos)
+        {
+            if (isAgile && !follow && !isCircular)
+            {
+                if (Vector3.Distance(unitPos, markerPos.position) < radius)
+                {
+                    return radius/2; //todo finetune
+                }
+            }
+            return 1;
+        }
     }
 
     //pyramid - yay , tesim sa na debug (; ;)
@@ -126,9 +138,12 @@ public class MarkerScript : MonoComponents {
     public void assign(GameObject obj)
     {
         if (positions.ContainsKey(obj)) return;
+        if (obj.GetComponent<UnitScript>().targetScript!=null) obj.GetComponent<UnitScript>().targetScript.unassign(obj);
+        obj.GetComponent<UnitScript>().targetScript = this;
         positions.Add(obj,new Position(obj,parentScript,gameObject.GetComponent<Transform>()));
         if (obj.GetComponent<UnitScript>().capital)
         {
+            capitalCount++;
             generateCapitals(Vector3.Normalize(gameObject.GetComponent<Transform>().position - obj.GetComponent<Transform>().position));
         }
         else
@@ -140,6 +155,10 @@ public class MarkerScript : MonoComponents {
     public void unassign(GameObject obj)
     {
         positions.Remove(obj);
+        if (obj.GetComponent<UnitScript>().capital)
+        {
+            capitalCount--;
+        }
         if (positions.Count==0 && parentScript==null) Destroy(gameObject);
     }
 }

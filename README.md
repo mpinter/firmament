@@ -7,6 +7,8 @@ Body sa skrtaju miesto mazania koli dobremu pocitu :)
 `feature` - druhorada/preskocena koli deadlineu/hlupost  
 **feature** - major/time consuming features
 
+* overshoot on turn
+* turn speed zavisli od radiusu
 * create marker as child for every unit
 * move in unitscript  
 * ~~selecting units (box & click)~~
