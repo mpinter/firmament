@@ -43,60 +43,81 @@ public class UnitRaycastScript : MonoComponents
 	    {
 	        unitScript.avoiding = false;
 	    }
-	    if (currentCd < 0f)
+	    if (unitScript.canAttack)
 	    {
-	        //attack
-	        var range = ranges[Random.Range(0, ranges.Count - 1)];
-            Debug.DrawLine(transform.position, transform.position + (Quaternion.Euler(0, 0, Random.Range(range.Key, range.Value)) * transform.up * attackRange), Color.red);
-            RaycastHit2D attackHit = Physics2D.Raycast(transform.position, (Quaternion.Euler(0, 0, Random.Range(range.Key, range.Value)) * transform.up), attackRange,unitScript.enemiesLayerMask);
-	        if (attackHit.collider != null)
+	        if (currentCd < 0f)
 	        {
-	            Debug.Log("ATTACK!");
-                Debug.Log(attackHit.distance);
-	            if (unitScript.targetScriptList.Count > 0 &&
-	                (unitScript.targetScriptList[0].parentScript == attackHit.collider.GetComponent<UnitScript>() || !unitScript.targetScriptList[0].positions[gameObject].attack))
+	            //attack
+	            var range = ranges[Random.Range(0, ranges.Count - 1)];
+	            Debug.DrawLine(transform.position,
+	                transform.position +
+	                (Quaternion.Euler(0, 0, Random.Range(range.Key, range.Value))*transform.up*attackRange), Color.red);
+	            RaycastHit2D attackHit = Physics2D.Raycast(transform.position,
+	                (Quaternion.Euler(0, 0, Random.Range(range.Key, range.Value))*transform.up), attackRange,
+	                unitScript.enemiesLayerMask);
+	            if (attackHit.collider != null &&
+	                !(attackHit.collider.gameObject.GetComponent<UnitScript>().isStructure && unitScript.agile))
 	            {
-	                Debug.Log("already attacking");
-                    shootAt(attackHit.collider.gameObject);
-                    Debug.Log(unitScript.targetScriptList[0].positions[gameObject].attack);
+	                Debug.Log("ATTACK!");
+	                Debug.Log(attackHit.distance);
+	                if (unitScript.targetScriptList.Count > 0 &&
+	                    (unitScript.targetScriptList[0].parentScript == attackHit.collider.GetComponent<UnitScript>() ||
+	                     !unitScript.targetScriptList[0].positions[gameObject].attack))
+	                {
+	                    Debug.Log("already attacking");
+	                    shootAt(attackHit.collider.gameObject);
+	                    Debug.Log(unitScript.targetScriptList[0].positions[gameObject].attack);
+
+	                }
+	                else if ((unitScript.targetScriptList.Count == 0) ||
+	                         (unitScript.targetScriptList[0].positions[gameObject].attack &&
+	                          !unitScript.targetScriptList[0].positions[gameObject].follow &&
+	                          !unitScript.targetScriptList[0].positions[gameObject].isCircular))
+	                {
+	                    //add marker beginning
+	                    Debug.Log("ADD MARKER"); //todo attack move and check this
+	                    attackHit.collider.GetComponent<UnitScript>().markerScript.assignFront(gameObject);
+	                    unitScript.targetScriptList[0].positions[gameObject].attack = true;
+	                    shootAt(attackHit.collider.gameObject);
+	                }
+	                else
+	                {
+	                    Debug.Log("Could shoot, but why bother?");
+	                    currentCd += Random.Range(0.0f, 0.2f);
+	                }
+	                if (unitScript.targetScriptList.Count > 0 &&
+	                    !unitScript.targetScriptList[0].positions[gameObject].attack)
+	                {
+	                    //casually shoot at things I encounter
+	                    //covered in first if, this just for debug
+	                    Debug.Log("Casual scrub");
+	                }
 
 	            }
-                else if ((unitScript.targetScriptList.Count == 0) || (unitScript.targetScriptList[0].positions[gameObject].attack && !unitScript.targetScriptList[0].positions[gameObject].follow && !unitScript.targetScriptList[0].positions[gameObject].isCircular))
+	            else if ((unitScript.targetScriptList.Count == 0) ||
+	                     (unitScript.targetScriptList[0].positions[gameObject].attack &&
+	                      !unitScript.targetScriptList[0].positions[gameObject].follow &&
+	                      !unitScript.targetScriptList[0].positions[gameObject].isCircular))
 	            {
-                    //add marker beginning
-                    Debug.Log("ADD MARKER"); //todo attack move and check this
-                    attackHit.collider.GetComponent<UnitScript>().markerScript.assignFront(gameObject);
-	                unitScript.targetScriptList[0].positions[gameObject].attack = true;
-                    shootAt(attackHit.collider.gameObject);
-                }
-                else
-                {
-                    Debug.Log("Could shoot, but why bother?");
-                }
-                if (unitScript.targetScriptList.Count > 0 && !unitScript.targetScriptList[0].positions[gameObject].attack)
-                {
-                    //casually shoot at things I encounter
-                    //covered in first if, this just for debug
-                    Debug.Log("Casual scrub");
-                }
-                
+	                //try aggro
+	                Debug.DrawLine(transform.position,
+	                    transform.position + (Quaternion.Euler(0, 0, Random.Range(0f, 360f))*transform.up*attackRange),
+	                    Color.yellow);
+	                RaycastHit2D aggroHit = Physics2D.Raycast(transform.position,
+	                    Quaternion.Euler(0, 0, Random.Range(0f, 360f))*transform.up, aggroRange,
+	                    unitScript.enemiesLayerMask);
+	                if (aggroHit.collider != null)
+	                {
+	                    Debug.Log("AGGRO!");
+	                    aggroHit.collider.GetComponent<UnitScript>().markerScript.assignFront(gameObject);
+	                    unitScript.targetScriptList[0].positions[gameObject].attack = true;
+	                }
+	            }
 	        }
-            else if ((unitScript.targetScriptList.Count == 0) || (unitScript.targetScriptList[0].positions[gameObject].attack && !unitScript.targetScriptList[0].positions[gameObject].follow && !unitScript.targetScriptList[0].positions[gameObject].isCircular))
+	        else
 	        {
-	            //try aggro
-                Debug.DrawLine(transform.position, transform.position + (Quaternion.Euler(0, 0, Random.Range(0f, 360f)) * transform.up * attackRange), Color.yellow);
-                RaycastHit2D aggroHit = Physics2D.Raycast(transform.position, Quaternion.Euler(0, 0, Random.Range(0f, 360f)) * transform.up, aggroRange, unitScript.enemiesLayerMask);
-                if (aggroHit.collider != null)
-                {
-                    Debug.Log("AGGRO!");
-                    aggroHit.collider.GetComponent<UnitScript>().markerScript.assignFront(gameObject);
-                    unitScript.targetScriptList[0].positions[gameObject].attack = true;
-                }
+	            currentCd -= Time.deltaTime;
 	        }
-	    }
-	    else
-	    {
-	        currentCd -= Time.deltaTime;
 	    }
 	}
 

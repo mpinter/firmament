@@ -5,10 +5,22 @@ using System.Collections.Generic;
 public class UnitScript : MonoComponents
 {
     private PlayerScript playerScript;
+    private AIScript aiScript;
+    private ForcesScript forcesScript;
+
+    public enum UnitType
+    {
+        transforming, vector, miner, fighter, artillery, capital, satelite, basePlanet, fighterPlanet, artilleryPlanet, capitalPlanet, other
+    };
+
+    public UnitType unitType = UnitType.other;
 
     public bool agile = false;
     public bool isStructure = false;
+    public bool isMineable = false;
     public bool capital = true;
+    public bool canAttack = true;
+    public bool miner = false;
 
     public int hp = 500;
     public float shootDist = 10.0f;
@@ -20,8 +32,12 @@ public class UnitScript : MonoComponents
     public float deceleration = 0.001f;
     public float rotateSpeed = 1.0f;
     private float overshootMin = 0.0f;
+    public float currentLoad = 0;
+    public float maxLoad = 100;
 
     public float planetRadius = 5.0f;
+    public float gatherSpeed = 1.0f;
+    public float minerals = 5000.0f;
 
     public bool avoiding = false;
     public bool lockOn = true;
@@ -30,21 +46,39 @@ public class UnitScript : MonoComponents
 
     public int owner=0;
     public List<MarkerScript> targetScriptList;
-    public MarkerScript markerScript; //todo create marker as child for every unit
+    public MarkerScript markerScript;
+    public MarkerScript lastMined;
 
 	// Use this for initialization
 	void Start () {
         Init();
 	    //enemiesLayerMask = 16711680 - (1 << (owner+16));
 	    enemiesLayerMask = 0;
-	    for (int i = 0; i < 8; i++)
-	    {
-	        if (i == owner) continue;
-	        enemiesLayerMask += 1 << (i + 16);
-	    }
-        //todo this can be null and add AI
         playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerScript>();
-        GameObject marker = Instantiate(Resources.Load("Prefabs/Marker", typeof(GameObject)), Vector3.zero, Quaternion.identity) as GameObject;
+	    if (owner >= 0)
+	    {
+	        for (int i = 0; i < 8; i++)
+	        {
+	            if (i == owner) continue;
+	            enemiesLayerMask += 1 << (i + 16);
+	        }
+	        if (owner == 0)
+	        {
+	            forcesScript = playerScript;
+	        }
+	        else
+	        {
+	            foreach (var ai in GameObject.FindGameObjectsWithTag("AI"))
+	            {
+	                if (ai.GetComponent<AIScript>().id == owner)
+	                {
+	                    aiScript = ai.GetComponent<AIScript>();
+	                    forcesScript = aiScript;
+	                }
+	            }
+	        }
+	    }
+	    GameObject marker = Instantiate(Resources.Load("Prefabs/Marker", typeof(GameObject)), Vector3.zero, Quaternion.identity) as GameObject;
         marker.transform.parent = transform;
 	    marker.transform.localPosition = Vector3.zero;
 	    markerScript = marker.GetComponent<MarkerScript>();
@@ -56,8 +90,12 @@ public class UnitScript : MonoComponents
             marker.GetComponent<MarkerScript>().assign(gameObject,false);
 	    }
 	}
-	
-	// Update is called once per frame
+
+    void Update()
+    {
+        //checkTask();
+    }
+
 	void FixedUpdate () {
 	    checkMove();
 	}
@@ -66,9 +104,18 @@ public class UnitScript : MonoComponents
     {
         if (targetScriptList.Count==0)
         {
-            if (agile) Debug.Log("Agile no Marker!!??");
-            checkSpeed();
-            transform.position += transform.up * speed;
+            if (agile)
+            {
+                Debug.Log("Agile no Marker!!??");
+                GameObject marker = Instantiate(Resources.Load("Prefabs/Marker", typeof (GameObject)), Vector3.zero, Quaternion.identity) as GameObject;
+                marker.GetComponent<MarkerScript>().assign(gameObject, false);
+            }
+            else
+            {
+                checkSpeed();
+                transform.position += transform.up * speed;    
+            }
+            
         }
         else
         {
@@ -88,6 +135,7 @@ public class UnitScript : MonoComponents
                         if (targetScriptList[0].positions[gameObject].isCircular)
                         {
                             Orbit(targetScriptList[0].positions[gameObject].generateNewTargetPosition());
+                            if (miner) checkMine();
                         }
                         else
                         {
@@ -127,7 +175,6 @@ public class UnitScript : MonoComponents
         else if (targetScriptList[0].positions[gameObject].follow)
         {
             float keepDist = (targetScriptList[0].parentScript.owner == owner) ? followDist : shootDist;
-            Debug.Log(keepDist);
             if (Vector3.Distance(targetScriptList[0].positions[gameObject].getTargetPosition(), transform.position) <
                 keepDist)
             {
@@ -251,5 +298,98 @@ public class UnitScript : MonoComponents
     public void OnDestroy()
     {
         //do when thinking
+        //todo list forces
+        if (playerScript!=null) unselect();
+        if (isMineable)
+        markerScript.Remove();
+    }
+
+    public float Gather()
+    {
+        if (!isMineable) Debug.Log("What are you trying to mine really ?!?");
+        minerals -= gatherSpeed*Time.deltaTime;
+        if (minerals < 0)
+        {
+            sendMinersHome();
+            Destroy(gameObject);
+        }
+        return gatherSpeed*Time.deltaTime;
+    }
+
+    //todo VERY prone to bugs, check here
+    public void sendMinersHome()
+    {
+        foreach (var record in markerScript.positions)
+        {
+            sendHome(record.Key);
+        }
+    }
+
+    //this is ugly (crosscall), todo rewrite
+    public void sendHome(GameObject miner)
+    {
+        Debug.Log("home?");
+        MarkerScript home = (miner.GetComponent<UnitScript>().forcesScript.asteroidMarkers.ContainsKey(gameObject)) ? miner.GetComponent<UnitScript>().forcesScript.asteroidMarkers[gameObject] : null;
+        if (home != null)
+        {
+            Debug.Log("send home");
+            home.assign(miner, false);
+        }
+        else
+        {
+            markerScript.unassign(gameObject);
+        }
+    }
+
+    public void checkMine()
+    {
+        //should be called only when orbiting
+        if (targetScriptList[0].parentScript.isMineable)
+        {
+            if (currentLoad < maxLoad)
+            {
+                currentLoad+=targetScriptList[0].parentScript.Gather();
+                //todo particle effect
+            }
+            else
+            {
+                currentLoad = maxLoad;
+                lastMined = targetScriptList[0];
+                targetScriptList[0].parentScript.sendHome(gameObject);
+                //todo check! prone to bugs - asteroids should allow only friendly planet targets and set to null when planets are destroyed
+                /*if (targetScriptList[0].parentScript.targetScriptList.Count > 0)
+                {
+                    MarkerScript currentTarget = targetScriptList[0];
+                    targetScriptList[0].parentScript.targetScriptList[0].assign(gameObject,false);
+                    currentTarget.assign(gameObject,true);
+                }*/
+            }
+            
+        }
+        else if (targetScriptList[0].parentScript.owner == owner)
+        {
+            if (currentLoad > 0)
+            {
+                //dropoff todo particle effect
+                currentLoad -= gatherSpeed*Time.deltaTime;
+                forcesScript.resPrimary += gatherSpeed*Time.deltaTime;
+            }
+            else
+            {
+                currentLoad = 0;
+                if (lastMined!=null) lastMined.assign(gameObject,false);
+            }
+        }
+        
+    }
+
+    public void checkTask()
+    {
+        
+    }
+
+    public void actionQ()
+    {
+        
     }
 }

@@ -7,7 +7,6 @@ using UnityEngine.UI;
 public class PlayerScript : ForcesScript {
 
     public HashSet<GameObject> selected=new HashSet<GameObject>();
-    public int id;
     private bool selectHit = false; //check if unit was succesfully clicked this frame
 
     //todo null && switch actions
@@ -53,7 +52,7 @@ public class PlayerScript : ForcesScript {
                 selected.Clear();    
             }
         }
-        if (Input.GetMouseButtonUp(1) && (CameraScript.downTime < 0.3f) && !selectHit && selected.Count>0 && !performingAction)
+        if (Input.GetMouseButtonUp(1) && (CameraScript.downTime < 0.1f) && !selectHit && selected.Count>0 && !performingAction)
         {
             
             //todo markers display only if their linked units are selected - check this on slection change - gethashcode
@@ -83,7 +82,8 @@ public class PlayerScript : ForcesScript {
         //todo - for now only moving, add attack, mining and stuff
          if (obj.tag == "Selectable")
          {
-             bool additive = (Input.GetKey(KeyCode.LeftShift)) ? true : false;
+            Debug.Log("Right click");
+            bool additive = (Input.GetKey(KeyCode.LeftShift)) ? true : false;
             setTarget(obj.GetComponent<UnitScript>().markerScript,additive);
             selectHit = true;
         }
@@ -93,10 +93,27 @@ public class PlayerScript : ForcesScript {
     {
         foreach (var unit in selected)
         {
+            //Debug.Log("asfasfasfas");
+            //Debug.Log(unit);
+            //Debug.Log(target);
             if (unit.GetComponent<UnitScript>().owner == id && unit.GetComponent<UnitScript>().markerScript!=target)
             {
                 target.assign(unit.gameObject,additive);
                 if (target.parentScript!=null && target.parentScript.owner != id) target.positions[unit.gameObject].attack = true;
+            }
+            else if (unit.GetComponent<UnitScript>().isMineable && target.parentScript.owner == id &&
+                     target.parentScript.isStructure)
+            {
+                /*
+                Debug.Log("lcick planet");
+                Debug.Log(unit.GetComponent<UnitScript>().targetScriptList.Count);
+                target.assign(unit.gameObject, additive);
+                Debug.Log(unit.GetComponent<UnitScript>().targetScriptList.Count);*/
+                //todo remove dead markers
+                asteroidMarkers[unit] = target;//unit.GetComponent<UnitScript>().targetScriptList[unit.GetComponent<UnitScript>().targetScriptList.Count - 1];
+                //Debug.Log(unit);
+                //Debug.Log(target.gameObject);
+                //unit.GetComponent<UnitScript>().targetScriptList.Clear(); //asteroid doesn't need this, contains targets from all players
             }
         }
     }

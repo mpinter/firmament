@@ -54,8 +54,10 @@ public class UnitSelectionScript : MonoComponents
             Vector3 clickPos = (CameraScript.startClick == -Vector3.one)
                 ? Camera.main.ScreenToWorldPoint(CameraScript.lastClickPos)
                 : Camera.main.ScreenToWorldPoint(CameraScript.startClick);
+            //Debug.Log("before rend");
             if (renderer.bounds.Contains(clickPos))
             {
+                //Debug.Log("After rend");
                 return gameObject;
             }
         }

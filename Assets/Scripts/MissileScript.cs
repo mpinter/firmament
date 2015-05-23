@@ -5,7 +5,7 @@ public class MissileScript : MonoComponents
 {
 
     public GameObject target;
-    public float speed=1.0f;
+    public float speed=1f;
     public int dmg = 100;
 
 	// Use this for initialization
@@ -17,7 +17,11 @@ public class MissileScript : MonoComponents
 
     void FixedUpdate()
     {
-        if (target==null) Destroy(gameObject);
+        if (target == null)
+        {
+            Destroy(gameObject);
+            return;
+        }
         transform.position=Vector3.MoveTowards(transform.position, target.GetComponent<Transform>().position, speed);
         if (Vector3.Distance(transform.position,target.GetComponent<Transform>().position)<1.0f) Destroy(gameObject);
     }

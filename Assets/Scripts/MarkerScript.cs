@@ -36,6 +36,15 @@ public class MarkerScript : MonoComponents {
             {
                 isCircular = whereScript.isStructure;
                 follow = !isCircular;
+                if (isCircular)
+                {
+                    //get closes point
+                    radius = whereScript.planetRadius;
+                    angle = (Vector3.Angle(mt.up, which.transform.position - mt.position) + 90);
+                    if (Vector3.Cross(mt.up, which.transform.position - mt.position).z < 0f) angle += 90;
+                    if ((which.transform.position.x > mt.position.x) && (which.transform.position.y > mt.position.y)) angle += 180;
+                    angle*= Mathf.Deg2Rad;
+                }
             }
             speed = whichScript.speedMax;
             isset = false;
@@ -203,4 +212,15 @@ public class MarkerScript : MonoComponents {
         }
         if (positions.Count == 0 && parentScript == null) Destroy(gameObject);
     }
+
+    public void Remove()
+    {
+        foreach (var obj in positions)
+        {
+            //unassign_noremove(obj.Key);
+            obj.Key.GetComponent<UnitScript>().targetScriptList.Remove(this);
+        }
+        Destroy(gameObject);
+    }
+
 }

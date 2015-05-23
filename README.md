@@ -2,6 +2,7 @@
 
 Reference guide nasleduje za TODO listom  
 
+* todo more inteligent planet avoidance
 * projectiles - particle system yay
 * while we're at particles - miner transform + actual mining (remember mining place and get dropoff from force script)
 * **attack move**
