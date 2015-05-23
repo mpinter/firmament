@@ -103,8 +103,12 @@ public class UnitRaycastScript : MonoComponents
     void shootAt(GameObject target)
     {
         //instantiate shot
-        //give it target and layermask
+        //give it target
         //shot script - on destroy reduce hp
+        Debug.Log(target);
+        GameObject missile = Instantiate(Resources.Load("Prefabs/Missile", typeof (GameObject))) as GameObject;
+        missile.transform.position = gameObject.transform.position;
+        missile.GetComponent<MissileScript>().target = target;
         currentCd = weaponCd;
     }
 }

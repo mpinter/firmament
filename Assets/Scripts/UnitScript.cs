@@ -247,4 +247,9 @@ public class UnitScript : MonoComponents
     {
         renderer.color = Color.white;
     }
+
+    public void OnDestroy()
+    {
+        //do when thinking
+    }
 }
