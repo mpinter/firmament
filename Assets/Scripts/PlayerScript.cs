@@ -23,6 +23,14 @@ public class PlayerScript : ForcesScript {
 	        performingAction = true;
             Debug.Log("action");
 	    }
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            foreach (var unit in selected)
+            {
+                if (!(unit.GetComponent<UnitScript>().isTransforming || unit.GetComponent<UnitScript>().isLocked))
+                unit.GetComponent<UnitScript>().actionQ();
+            }
+        }
 	}
 
     void LateUpdate()
@@ -79,7 +87,6 @@ public class PlayerScript : ForcesScript {
     public void processRightClick(GameObject obj)
     {
         if (obj == null) return;
-        //todo - for now only moving, add attack, mining and stuff
          if (obj.tag == "Selectable")
          {
             Debug.Log("Right click");
@@ -93,27 +100,25 @@ public class PlayerScript : ForcesScript {
     {
         foreach (var unit in selected)
         {
-            //Debug.Log("asfasfasfas");
-            //Debug.Log(unit);
-            //Debug.Log(target);
+            if (unit.GetComponent<UnitScript>().isLocked) continue;
             if (unit.GetComponent<UnitScript>().owner == id && unit.GetComponent<UnitScript>().markerScript!=target)
             {
-                target.assign(unit.gameObject,additive);
-                if (target.parentScript!=null && target.parentScript.owner != id) target.positions[unit.gameObject].attack = true;
+                if (unit.GetComponent<UnitScript>().isStructure)
+                {
+                    unit.GetComponent<UnitScript>().rally = target;
+                }
+                else
+                {
+                    target.assign(unit.gameObject, additive);
+                    if (target.parentScript != null && target.parentScript.owner != id) target.positions[unit.gameObject].attack = true;    
+                }
             }
             else if (unit.GetComponent<UnitScript>().isMineable && target.parentScript.owner == id &&
                      target.parentScript.isStructure)
             {
-                /*
-                Debug.Log("lcick planet");
-                Debug.Log(unit.GetComponent<UnitScript>().targetScriptList.Count);
-                target.assign(unit.gameObject, additive);
-                Debug.Log(unit.GetComponent<UnitScript>().targetScriptList.Count);*/
                 //todo remove dead markers
-                asteroidMarkers[unit] = target;//unit.GetComponent<UnitScript>().targetScriptList[unit.GetComponent<UnitScript>().targetScriptList.Count - 1];
-                //Debug.Log(unit);
-                //Debug.Log(target.gameObject);
-                //unit.GetComponent<UnitScript>().targetScriptList.Clear(); //asteroid doesn't need this, contains targets from all players
+                asteroidMarkers[unit] = target;
+
             }
         }
     }

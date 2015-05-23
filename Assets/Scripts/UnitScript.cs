@@ -38,18 +38,26 @@ public class UnitScript : MonoComponents
     public float planetRadius = 5.0f;
     public float gatherSpeed = 1.0f;
     public float minerals = 5000.0f;
+    public MarkerScript rally = null;
 
     public bool avoiding = false;
     public bool lockOn = true;
     public float avoidRotate;
     public int enemiesLayerMask; //all - 16711680
 
+    public bool isTransforming = false; //no movement
+    public bool isLocked = false; //no commands
+    public float transformTimer = 0.0f;
+    public float transformCoef = 0.0f;
+
+    public Vector3 asteroidDrag;
+
     public int owner=0;
     public List<MarkerScript> targetScriptList;
     public MarkerScript markerScript;
+    public GameObject centerMarker;
     public MarkerScript lastMined;
 
-	// Use this for initialization
 	void Start () {
         Init();
 	    //enemiesLayerMask = 16711680 - (1 << (owner+16));
@@ -78,6 +86,20 @@ public class UnitScript : MonoComponents
 	            }
 	        }
 	    }
+	    else
+	    {
+	        if (isMineable)
+	        {
+	            asteroidDrag = Random.insideUnitCircle;
+	        }
+	    }
+        if (centerMarker != null)
+        {
+            //well f- me sideways and call me daisy, if this works I shall be known as an Oracle of class design
+            //also, it's late again so I'm getting overly poetic
+            centerMarker.GetComponent<MarkerScript>().forcePosition(gameObject, gameObject, this, centerMarker.transform);
+            transform.position = targetScriptList[0].positions[gameObject].generateNewTargetPosition();
+        }
 	    GameObject marker = Instantiate(Resources.Load("Prefabs/Marker", typeof(GameObject)), Vector3.zero, Quaternion.identity) as GameObject;
         marker.transform.parent = transform;
 	    marker.transform.localPosition = Vector3.zero;
@@ -93,15 +115,21 @@ public class UnitScript : MonoComponents
 
     void Update()
     {
-        //checkTask();
+        checkTask();
     }
 
 	void FixedUpdate () {
-	    checkMove();
+	    if (!isTransforming) checkMove();
 	}
 
     private void checkMove()
     {
+        if (isMineable)
+        {
+            //todo finetune
+            transform.position = Vector3.MoveTowards(transform.position, transform.position+asteroidDrag,Time.deltaTime*0.2f);
+            return;
+        }
         if (targetScriptList.Count==0)
         {
             if (agile)
@@ -130,12 +158,13 @@ public class UnitScript : MonoComponents
                 }
                 else
                 {
-                    if (agile)
+                    if ((agile)||(isStructure))
                     {
                         if (targetScriptList[0].positions[gameObject].isCircular)
                         {
                             Orbit(targetScriptList[0].positions[gameObject].generateNewTargetPosition());
                             if (miner) checkMine();
+                            if (unitType == UnitType.vector) startTerraforming(targetScriptList[0].parentScript.gameObject);
                         }
                         else
                         {
@@ -300,8 +329,11 @@ public class UnitScript : MonoComponents
         //do when thinking
         //todo list forces
         if (playerScript!=null) unselect();
-        if (isMineable)
-        markerScript.Remove();
+        foreach (var target in targetScriptList)
+        {
+            if (target!=null) target.unassign_noremove(gameObject);
+        }
+        if (isMineable) markerScript.Remove();
     }
 
     public float Gather()
@@ -385,11 +417,112 @@ public class UnitScript : MonoComponents
 
     public void checkTask()
     {
+        if (transformTimer > 0.0f)
+        {
+            if (unitType == UnitType.vector && isLocked)
+            {
+                //a bit unsafe, but if it crashes here at least I should know what is wrong
+                //todo finetune parameters
+                transformCoef = (101 - targetScriptList[0].parentScript.transformTimer) / 100.0f;
+                targetScriptList[0].parentScript.transformTimer -= transformCoef*Time.deltaTime;
+            }
+            transformTimer -= transformCoef*Time.deltaTime;
+        }
+        if (transformTimer <= 0.0f)
+        {
+            if (isTransforming)
+            {
+                isTransforming = false;
+                //todo so far only transform, later change
+                GetComponent<SpriteRenderer>().sprite = Resources.Load("Sprites/Placehold/miner", typeof(Sprite)) as Sprite;
+            }
+            else if (isLocked && unitType!=UnitType.satelite) //satelites are locked for life
+            {
+                if (isStructure)
+                {
+                    //todo change sprite - building complete
+                    GetComponent<SpriteRenderer>().sprite = Resources.Load("Sprites/Placehold/planets_01", typeof(Sprite)) as Sprite;
+                    isLocked = false;
+                }
+                else
+                {
+                    //builder finished
+                    Destroy(gameObject);   
+                }
+            }
+        }
+    }
+
+    //
+    public void startBuildingPlanet(UnitType buildingType)
+    {
+        unitType = buildingType;
+        isLocked = true;
+        transformTimer = 100;
+        //todo add hp progressively
+        switch (buildingType)
+        {
+            case UnitType.basePlanet:
+                transformCoef = 0.0f;
+                hp = 1000;
+                break;
+            case UnitType.fighterPlanet:
+                transformCoef = 5.0f;
+                hp = 10000;
+                break;
+            case UnitType.artilleryPlanet:
+                transformCoef = 5.0f;
+                hp = 10000;
+                break;
+            case UnitType.capitalPlanet:
+                transformCoef = 5.0f;
+                hp = 100000;
+                break;
+        }
+    }
+
+    public void startTerraforming(GameObject planet)
+    {
+        UnitScript planetScript = planet.GetComponent<UnitScript>();
+        if (planetScript.owner < 0)
+        {
+            planetScript.owner = owner;
+            planetScript.startBuildingPlanet(UnitType.basePlanet);
+        }
+        if (planetScript.unitType == UnitType.basePlanet && planetScript.owner == owner && planetScript.isLocked)
+        {
+            isLocked = true;
+            transformTimer = 100;
+            transformCoef=(101-planetScript.transformTimer);
+            GetComponent<SpriteRenderer>().sprite = Resources.Load("Sprites/Placehold/transform", typeof(Sprite)) as Sprite;
+            //todo particles
+        }
+    }
+
+    private void produce(UnitType productionType)
+    {
         
     }
 
+    //this is ungly but done due to time constraints, i'd prefer inheritance for diferent units/behaviours
     public void actionQ()
     {
-        
+        switch (unitType)
+        {
+            case UnitType.basePlanet:
+            case UnitType.fighterPlanet:
+            case UnitType.artilleryPlanet:
+            case UnitType.capitalPlanet:
+                produce(UnitType.satelite);
+                break;
+            case UnitType.vector:
+                isTransforming = true;
+                unitType = UnitType.miner;
+                //todo change sprite
+                GetComponent<SpriteRenderer>().sprite =Resources.Load("Sprites/Placehold/transform", typeof (Sprite)) as Sprite;
+                transformTimer = 100;
+                transformCoef = 10;
+                break;
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.Remoting.Messaging;
 using UnityEngine;
 using System.Collections;
 
@@ -23,6 +24,7 @@ public class UnitRaycastScript : MonoComponents
 	
 	void Update ()
 	{
+        if (unitScript.isTransforming || (unitScript.isLocked && unitScript.unitType!=UnitScript.UnitType.satelite)) return;
         RaycastHit2D avoidHit = Physics2D.Raycast(transform.position, transform.up, avoidRange, 1 << 8);
         Debug.DrawLine(transform.position, transform.position+transform.up * avoidRange, Color.green);
 	    if (avoidHit.collider != null)
