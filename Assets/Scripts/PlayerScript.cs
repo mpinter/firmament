@@ -19,24 +19,43 @@ public class PlayerScript : ForcesScript {
 	}
 	
 	void Update () {
-	
+	    if (Input.GetKey(KeyCode.A))
+	    {
+	        performingAction = true;
+            Debug.Log("action");
+	    }
 	}
 
     void LateUpdate()
     {
         //todo pretify
-        if (Input.GetMouseButtonUp(0) && (CameraScript.downTime < 0.1f) && !selectHit && !performingAction)
+        if (Input.GetMouseButtonUp(0) && (CameraScript.downTime < 0.1f) && !selectHit)
         {
             //todo
-            foreach (var unit in selected)
+            if (performingAction)
             {
-                unit.GetComponent<UnitScript>().unselect_noremove();
+                GameObject marker = (GameObject)Instantiate(Resources.Load("Prefabs/Marker", typeof(GameObject)));
+                marker.GetComponent<Transform>().position = Camera.main.ScreenToWorldPoint(CameraScript.lastClickPos);
+                bool additive = (Input.GetKey(KeyCode.LeftShift)) ? true : false;
+                setTarget(marker.GetComponent<MarkerScript>(), additive);
+                foreach (var unit in selected)
+                {
+                    marker.GetComponent<MarkerScript>().positions[unit].attack = true;
+                }
+                performingAction = false;
             }
-            selected.Clear();
+            else
+            {
+                foreach (var unit in selected)
+                {
+                    unit.GetComponent<UnitScript>().unselect_noremove();
+                }
+                selected.Clear();    
+            }
         }
         if (Input.GetMouseButtonUp(1) && (CameraScript.downTime < 0.3f) && !selectHit && selected.Count>0 && !performingAction)
         {
-            Debug.Log("AWAKEN");
+            
             //todo markers display only if their linked units are selected - check this on slection change - gethashcode
             GameObject marker = (GameObject)Instantiate(Resources.Load("Prefabs/Marker", typeof(GameObject)));
             marker.GetComponent<Transform>().position = Camera.main.ScreenToWorldPoint(CameraScript.lastClickPos);

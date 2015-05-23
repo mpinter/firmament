@@ -65,7 +65,7 @@ public class UnitRaycastScript : MonoComponents
 	            {
                     //add marker beginning
                     Debug.Log("ADD MARKER"); //todo attack move and check this
-                    attackHit.collider.GetComponent<MarkerScript>().assignFront(gameObject);
+                    attackHit.collider.GetComponent<UnitScript>().markerScript.assignFront(gameObject);
 	                unitScript.targetScriptList[0].positions[gameObject].attack = true;
                     shootAt(attackHit.collider.gameObject);
                 }
@@ -89,7 +89,7 @@ public class UnitRaycastScript : MonoComponents
                 if (aggroHit.collider != null)
                 {
                     Debug.Log("AGGRO!");
-                    aggroHit.collider.GetComponent<MarkerScript>().assignFront(gameObject);
+                    aggroHit.collider.GetComponent<UnitScript>().markerScript.assignFront(gameObject);
                     unitScript.targetScriptList[0].positions[gameObject].attack = true;
                 }
 	        }
