@@ -10,7 +10,7 @@ public class UnitScript : MonoComponents
 
     public enum UnitType
     {
-        transforming, vector, miner, fighter, artillery, capital, satelite, basePlanet, fighterPlanet, artilleryPlanet, capitalPlanet, other
+        transforming, vector, miner, fighter, artillery, capital, satelite, basePlanet, fighterPlanet, artilleryPlanet, capitalPlanet, blackHole, other
     };
 
     public UnitType unitType = UnitType.other;
@@ -58,6 +58,56 @@ public class UnitScript : MonoComponents
     public GameObject centerMarker;
     public MarkerScript lastMined;
 
+    public List<ProductionItem> productionQueue;
+
+    public class ProductionItem
+    {
+        public string prefabPath;
+        public int quantity;
+        public int limit = 0;
+        public float remainingTime;
+        public float resetTime;
+        public float spawnRadius;
+        public float cost;
+        public bool endless = false;
+        public bool active = false;
+
+        public ProductionItem(string _prefabPath,int _quantity,float _resetTime, float _spawnRadius, float _cost, bool _endless)
+        {
+            prefabPath = _prefabPath;
+            quantity = _quantity;
+            resetTime = _resetTime;
+            spawnRadius = _spawnRadius;
+            cost = _cost;
+            endless = _endless;
+            remainingTime = resetTime;
+        }
+
+        public void Update(Transform t)
+        {
+            if (active)
+            {
+                remainingTime -= Time.deltaTime;
+                if (remainingTime < 0) spawn(t);
+            }
+        }
+
+        public void spawn(Transform t)
+        {
+            if (limit > 0) Mathf.Clamp(quantity, 1, limit);
+            for (int i = 0; i < quantity; i++)
+            {
+                GameObject latest = Instantiate(Resources.Load(prefabPath, typeof(GameObject))) as GameObject;
+                latest.transform.position = t.position + Vector3.Normalize(Random.insideUnitCircle) * spawnRadius;
+            }
+            if (endless)
+            {
+                remainingTime = resetTime;
+            }
+        }
+
+    }
+
 	void Start () {
         Init();
 	    //enemiesLayerMask = 16711680 - (1 << (owner+16));
@@ -65,26 +115,7 @@ public class UnitScript : MonoComponents
         playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerScript>();
 	    if (owner >= 0)
 	    {
-	        for (int i = 0; i < 8; i++)
-	        {
-	            if (i == owner) continue;
-	            enemiesLayerMask += 1 << (i + 16);
-	        }
-	        if (owner == 0)
-	        {
-	            forcesScript = playerScript;
-	        }
-	        else
-	        {
-	            foreach (var ai in GameObject.FindGameObjectsWithTag("AI"))
-	            {
-	                if (ai.GetComponent<AIScript>().id == owner)
-	                {
-	                    aiScript = ai.GetComponent<AIScript>();
-	                    forcesScript = aiScript;
-	                }
-	            }
-	        }
+	        setOwner(owner);
 	    }
 	    else
 	    {
@@ -116,11 +147,25 @@ public class UnitScript : MonoComponents
     void Update()
     {
         checkTask();
+        if (productionQueue != null) updateQueue();
     }
 
 	void FixedUpdate () {
 	    if (!isTransforming) checkMove();
 	}
+
+    private void updateQueue()
+    {
+        Debug.Log(forcesScript);
+        if (productionQueue.Count==0) return;
+        if (!productionQueue[0].active && productionQueue[0].cost <= forcesScript.resPrimary)
+        {
+            productionQueue[0].active = true;
+            forcesScript.resPrimary -= productionQueue[0].cost;
+        }
+        productionQueue[0].Update(transform);
+        if (productionQueue[0].remainingTime<0) productionQueue.RemoveAt(0);
+    }
 
     private void checkMove()
     {
@@ -162,7 +207,7 @@ public class UnitScript : MonoComponents
                     {
                         if (targetScriptList[0].positions[gameObject].isCircular)
                         {
-                            Orbit(targetScriptList[0].positions[gameObject].generateNewTargetPosition());
+                            Orbit(targetScriptList[0].positions[gameObject].generateNewTargetPosition() + targetScriptList[0].getOffset());
                             if (miner) checkMine();
                             if (unitType == UnitType.vector) startTerraforming(targetScriptList[0].parentScript.gameObject);
                         }
@@ -456,6 +501,7 @@ public class UnitScript : MonoComponents
     //
     public void startBuildingPlanet(UnitType buildingType)
     {
+        productionQueue = new List<ProductionItem>();
         unitType = buildingType;
         isLocked = true;
         transformTimer = 100;
@@ -486,7 +532,7 @@ public class UnitScript : MonoComponents
         UnitScript planetScript = planet.GetComponent<UnitScript>();
         if (planetScript.owner < 0)
         {
-            planetScript.owner = owner;
+            planetScript.setOwner(owner);
             planetScript.startBuildingPlanet(UnitType.basePlanet);
         }
         if (planetScript.unitType == UnitType.basePlanet && planetScript.owner == owner && planetScript.isLocked)
@@ -513,7 +559,7 @@ public class UnitScript : MonoComponents
             case UnitType.fighterPlanet:
             case UnitType.artilleryPlanet:
             case UnitType.capitalPlanet:
-                produce(UnitType.satelite);
+                productionQueue.Add(new ProductionItem("Prefabs/wut",3,10f,planetRadius+1,0,false));
                 break;
             case UnitType.vector:
                 isTransforming = true;
@@ -524,5 +570,32 @@ public class UnitScript : MonoComponents
                 transformCoef = 10;
                 break;
         }
+    }
+
+    //also sets enemy layer masks
+    private void setOwner(int ownerId)
+    {
+        owner = ownerId;
+        for (int i = 0; i < 8; i++)
+        {
+            if (i == ownerId) continue;
+            enemiesLayerMask += 1 << (i + 16);
+        }
+        if (ownerId == 0)
+        {
+            forcesScript = playerScript;
+        }
+        else if (ownerId > 0)
+        {
+            foreach (var ai in GameObject.FindGameObjectsWithTag("AI"))
+            {
+                if (ai.GetComponent<AIScript>().id == ownerId)
+                {
+                    aiScript = ai.GetComponent<AIScript>();
+                    forcesScript = aiScript;
+                }
+            }
+        }
+        else forcesScript = null;
     }
 }

@@ -2,13 +2,12 @@
 
 Reference guide nasleduje za TODO listom  
 
-* todo more inteligent planet avoidance
-* projectiles - particle system yay
-* while we're at particles - miner transform + actual mining (remember mining place and get dropoff from force script)
-* **attack move**
+* rally point
+* more inteligent planet avoidance
+* particle system yay
 * debug deceleration when in mood
 * push markers out of planet radii
-* multiple weapon semafor cooldown
+* multiple weapon - each with own cooldown
 * overshoot on turn
 * selection gui (markers for different zoom levels, use unity gui ??)
 * cleanup camera script (onGui)

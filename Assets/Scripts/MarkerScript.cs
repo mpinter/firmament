@@ -10,6 +10,8 @@ public class MarkerScript : MonoComponents {
     private int capitalCount;
     public UnitScript parentScript=null;
 
+    private Vector3 previousPos;
+
     public class Position
     {
         public bool follow;
@@ -141,15 +143,26 @@ public class MarkerScript : MonoComponents {
         }
     }
 
+    public Vector3 getOffset()
+    {
+        return transform.position - previousPos;
+    }
+
     void Update()
     {
         if (parentScript==null && positions.Count==0) Destroy(gameObject);
+    }
+
+    void LateUpdate()
+    {
+        previousPos = transform.position;
     }
 
     void Awake()
     {
         Init();
         capitalCount = 0;
+        previousPos = transform.position;
     }
 
     public void assignFront(GameObject obj)
