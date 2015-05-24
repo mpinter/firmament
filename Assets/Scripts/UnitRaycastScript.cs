@@ -8,8 +8,8 @@ public class UnitRaycastScript : MonoComponents
     public float aggroRange=5.0f; //only when no cooldown and not attacking
     public float avoidRange=5.0f;
     public float attackRange=5.0f;
-    public int maxInterval = 60;
-    public int avoidInterval = 10;
+    public int maxInterval = 6000;
+    public int avoidInterval = 10000;
     public int attackInterval = 20;
     public int aggroInterval = 60;
     private int currentInterval = 0;
@@ -29,7 +29,7 @@ public class UnitRaycastScript : MonoComponents
 	        case UnitScript.UnitType.vector:
                 ranges.Add(new KeyValuePair<float, float>(0.0f,0.0f));
                 currentCd.Add(5.0f);
-                guns.Add("Prefabs/Missile");
+                guns.Add("Prefabs/Laserz");
 	            break;
             case UnitScript.UnitType.artillery:
                 ranges.Add(new KeyValuePair<float, float>(0.0f, 0.0f));
@@ -47,13 +47,13 @@ public class UnitRaycastScript : MonoComponents
 	            for (int i = 0; i < 6; i++)
 	            {
 	                currentCd.Add(weaponCd);
-                    guns.Add("Prefabs/Missile");
+                    guns.Add("Prefabs/HugeMissile");
 	            }
                 break;
             case UnitScript.UnitType.satelite:
                 ranges.Add(new KeyValuePair<float, float>(0.0f,360.0f));
-                currentCd.Add(10.0f);
-                guns.Add("Prefabs/Missile");
+                currentCd.Add(0.0f);
+                guns.Add("Prefabs/Laserz");
 	            break;
 	    }
 	}
@@ -101,22 +101,23 @@ public class UnitRaycastScript : MonoComponents
 	                    Debug.DrawLine(transform.position,
 	                        transform.position +
 	                        (Quaternion.Euler(0, 0, Random.Range(ranges[range].Key, ranges[range].Value))*transform.up*
-	                         attackRange), Color.red);
+	                         attackRange), Color.red,1);
 	                    RaycastHit2D attackHit = Physics2D.Raycast(transform.position,
 	                        (Quaternion.Euler(0, 0, Random.Range(ranges[range].Key, ranges[range].Value))*transform.up),
 	                        attackRange,
 	                        unitScript.enemiesLayerMask);
+                        Debug.Log("tryattack");
 	                    if (attackHit.collider != null &&
 	                        !(attackHit.collider.gameObject.GetComponent<UnitScript>().isStructure && unitScript.agile))
 	                    {
-	                        //Debug.Log("ATTACK!");
+	                        Debug.Log("ATTACK!");
 	                        //Debug.Log(attackHit.distance);
 	                        if (unitScript.targetScriptList.Count > 0 &&
 	                            (unitScript.targetScriptList[0].parentScript ==
 	                             attackHit.collider.GetComponent<UnitScript>() ||
 	                             !unitScript.targetScriptList[0].positions[gameObject].attack))
 	                        {
-	                            //Debug.Log("already attacking");
+	                            Debug.Log("already attacking");
 	                            shootAt(attackHit.collider.gameObject, range);
 	                            //Debug.Log(unitScript.targetScriptList[0].positions[gameObject].attack);
 
@@ -134,7 +135,7 @@ public class UnitRaycastScript : MonoComponents
 	                        }
 	                        else
 	                        {
-	                            //Debug.Log("Could shoot, but why bother?");
+	                            Debug.Log("Could shoot, but why bother?");
 	                            currentCd[range] += Random.Range(0.0f, 0.5f);
 	                        }
 	                        if (unitScript.targetScriptList.Count > 0 &&
@@ -187,6 +188,7 @@ public class UnitRaycastScript : MonoComponents
         Debug.Log(target);
         GameObject missile = Instantiate(Resources.Load(guns[gunId], typeof (GameObject))) as GameObject;
         missile.transform.position = gameObject.transform.position;
+        if (missile.GetComponent<MissileScript>().laser) missile.transform.parent = gameObject.transform;
         missile.GetComponent<MissileScript>().target = target;
         currentCd[gunId] = weaponCd;
     }

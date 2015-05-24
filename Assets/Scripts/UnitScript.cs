@@ -63,6 +63,11 @@ public class UnitScript : MonoComponents
     public GameObject centerMarker;
     public MarkerScript lastMined;
 
+    public ParticleSystem primaryThrust;
+    public ParticleSystem secondaryThrust;
+    public ParticleSystem transformParticles;
+    public ParticleSystem mineParticles;
+
     public List<ProductionItem> productionQueue;
 
     public class ProductionItem
@@ -164,6 +169,25 @@ public class UnitScript : MonoComponents
 	    if (unitType == UnitType.vector)
 	    {
 	        forcesScript.resSecondary++;
+	        ParticleSystem[] pa=GetComponentsInChildren<ParticleSystem>();
+	        foreach (var sys in pa)
+	        {
+	            if (sys.CompareTag("MorphParticles"))
+	            {
+	                transformParticles = sys;
+                    sys.Stop();
+	            }
+	            if (sys.CompareTag("ThrustParticles"))
+	            {
+	                primaryThrust = sys;
+                    sys.Play();
+	            }
+	            if (sys.CompareTag("MineParticles"))
+	            {
+	                mineParticles = sys;
+	                sys.Stop();
+	            }
+	        }
 	    }
 	}
 
@@ -171,6 +195,7 @@ public class UnitScript : MonoComponents
     {
         checkTask();
         if (productionQueue != null) updateQueue();
+        if (hp<=0) Destroy(gameObject);
     }
 
 	void FixedUpdate () {
@@ -221,6 +246,14 @@ public class UnitScript : MonoComponents
         }
         else
         {
+            if ((targetScriptList[0].positions[gameObject].follow ||
+                 targetScriptList[0].positions[gameObject].isCircular) &&
+                (targetScriptList[0].positions[gameObject].markerPos == null))
+            {
+                targetScriptList[0].unassign(gameObject);
+                checkMove();
+                return;
+            }
             if (
                 Vector3.Distance(targetScriptList[0].positions[gameObject].getTargetPosition(),
                     gameObject.GetComponent<Transform>().position) < 1.0f)
@@ -229,6 +262,7 @@ public class UnitScript : MonoComponents
                 {
                     targetScriptList[0].unassign(gameObject);
                     checkMove();
+                    return;
                 }
                 else
                 {
@@ -252,6 +286,7 @@ public class UnitScript : MonoComponents
                         {
                             targetScriptList[0].unassign(gameObject);
                             checkMove();
+                            return;
                         }
                     }
                 }
@@ -368,7 +403,7 @@ public class UnitScript : MonoComponents
     public void checkLife()
     {
         //todo add fancy explosion, ondestroy event
-        if (hp<0) Destroy(gameObject);
+        if (hp<=0) Destroy(gameObject);
     }
 
     public void select()
@@ -460,9 +495,11 @@ public class UnitScript : MonoComponents
             {
                 currentLoad+=targetScriptList[0].parentScript.Gather();
                 //todo particle effect
+                if (!mineParticles.isPlaying) mineParticles.Play();
             }
             else
             {
+                mineParticles.Stop();
                 currentLoad = maxLoad;
                 lastMined = targetScriptList[0];
                 targetScriptList[0].parentScript.sendHome(gameObject);
@@ -481,11 +518,13 @@ public class UnitScript : MonoComponents
             if (currentLoad > 0)
             {
                 //dropoff todo particle effect
+                if (!mineParticles.isPlaying) mineParticles.Play();
                 currentLoad -= gatherSpeed*Time.deltaTime;
                 forcesScript.resPrimary += gatherSpeed*Time.deltaTime;
             }
             else
             {
+                mineParticles.Stop();
                 currentLoad = 0;
                 if (lastMined!=null) lastMined.assign(gameObject,false);
             }
@@ -522,6 +561,8 @@ public class UnitScript : MonoComponents
             {
                 isTransforming = false;
                 //todo so far only transform, later change
+                miner = true;
+                transformParticles.Stop();
                 GetComponent<SpriteRenderer>().sprite = Resources.Load("Sprites/Placehold/miner", typeof(Sprite)) as Sprite;
             }
             else if (isLocked && unitType!=UnitType.satelite) //satelites are locked for life
@@ -583,7 +624,9 @@ public class UnitScript : MonoComponents
             isLocked = true;
             transformTimer = 100;
             transformCoef=(101-planetScript.transformTimer);
-            GetComponent<SpriteRenderer>().sprite = Resources.Load("Sprites/Placehold/transform", typeof(Sprite)) as Sprite;
+            GetComponent<SpriteRenderer>().sprite = Resources.Load("Sprites/Misc/transparency_hack", typeof(Sprite)) as Sprite;
+            primaryThrust.Stop();
+            transformParticles.Play();
             //todo particles
         }
     }
@@ -603,7 +646,10 @@ public class UnitScript : MonoComponents
                 isTransforming = true;
                 unitType = UnitType.miner;
                 miner = true;
-                GetComponent<SpriteRenderer>().sprite =Resources.Load("Sprites/Placehold/transform", typeof (Sprite)) as Sprite;
+                GetComponent<SpriteRenderer>().sprite = Resources.Load("Sprites/Misc/transparency_hack", typeof(Sprite)) as Sprite;
+                primaryThrust.Stop();
+                transformParticles.Play();
+                primaryThrust.Stop();
                 transformTimer = 100;
                 transformCoef = 10;
                 break;

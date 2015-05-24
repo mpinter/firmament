@@ -19,7 +19,7 @@ public class MarkerScript : MonoComponents {
         public bool attack;
         public bool isset;
 
-        private Transform markerPos;
+        public Transform markerPos;
         private Vector3 pos;
         public bool isCircular;
         private float angle = 0.0f;

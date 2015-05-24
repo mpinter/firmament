@@ -57,6 +57,7 @@
      <Compile Include="Assets\Scripts\MonoComponents.cs" />
      <Compile Include="Assets\Scripts\PlayerScript.cs" />
      <Compile Include="Assets\Scripts\ProductionItem.cs" />
+     <Compile Include="Assets\Scripts\SecondLaserScript.cs" />
      <Compile Include="Assets\Scripts\UnitRaycastScript.cs" />
      <Compile Include="Assets\Scripts\UnitScript.cs" />
      <Compile Include="Assets\Scripts\UnitSelectionScript.cs" />

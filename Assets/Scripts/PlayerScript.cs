@@ -105,10 +105,11 @@ public class PlayerScript : ForcesScript {
             {
                 GameObject marker = (GameObject)Instantiate(Resources.Load("Prefabs/Marker", typeof(GameObject)));
                 marker.GetComponent<Transform>().position = Camera.main.ScreenToWorldPoint(CameraScript.lastClickPos);
-                bool additive = (Input.GetKey(KeyCode.LeftShift)) ? true : false;
+                bool additive = Input.GetKey(KeyCode.LeftShift);
                 setTarget(marker.GetComponent<MarkerScript>(), additive);
                 foreach (var unit in selected)
                 {
+
                     marker.GetComponent<MarkerScript>().positions[unit].attack = true;
                 }
                 performingAction = false;
@@ -140,10 +141,16 @@ public class PlayerScript : ForcesScript {
         //todo for now only selecting
         if (obj.tag == "Selectable")
         {
-            Debug.Log("djobhdfu");
-           unselectAll();
-            obj.GetComponent<UnitScript>().select();
-            selectHit = true;
+            if (!performingAction)
+            {
+                unselectAll();
+                obj.GetComponent<UnitScript>().select();
+                selectHit = true;
+            }
+            else
+            {
+                processRightClick(obj);
+            }
         }
     }
 
@@ -153,7 +160,7 @@ public class PlayerScript : ForcesScript {
          if (obj.tag == "Selectable")
          {
             Debug.Log("Right click");
-            bool additive = (Input.GetKey(KeyCode.LeftShift)) ? true : false;
+            bool additive = Input.GetKey(KeyCode.LeftShift);
             setTarget(obj.GetComponent<UnitScript>().markerScript,additive);
             selectHit = true;
         }
