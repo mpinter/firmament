@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Remoting;
 using UnityEngine;
 using System.Collections;
@@ -25,13 +26,71 @@ public class PlayerScript : ForcesScript {
 	    }
         if (Input.GetKeyDown(KeyCode.Q))
         {
+            qAction();
+        }
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
             foreach (var unit in selected)
             {
                 if (!(unit.GetComponent<UnitScript>().isTransforming || unit.GetComponent<UnitScript>().isLocked))
-                unit.GetComponent<UnitScript>().actionQ();
+                    unit.GetComponent<UnitScript>().Cancel();
             }
         }
 	}
+
+    void OnGUI()
+    {
+        if (selected.Count > 0)
+        {
+            GameObject.FindGameObjectWithTag("QButton").GetComponentInChildren<Text>().text = selected.First().GetComponent<UnitScript>().qText;
+            GameObject.FindGameObjectWithTag("WButton").GetComponentInChildren<Text>().text = selected.First().GetComponent<UnitScript>().wText;
+            GameObject.FindGameObjectWithTag("EButton").GetComponentInChildren<Text>().text = selected.First().GetComponent<UnitScript>().eText;
+            GameObject.FindGameObjectWithTag("RButton").GetComponentInChildren<Text>().text = selected.First().GetComponent<UnitScript>().rText;
+        }
+        else
+        {
+            GameObject.FindGameObjectWithTag("QButton").GetComponentInChildren<Text>().text = "Q";
+            GameObject.FindGameObjectWithTag("WButton").GetComponentInChildren<Text>().text = "W";
+            GameObject.FindGameObjectWithTag("EButton").GetComponentInChildren<Text>().text = "E";
+            GameObject.FindGameObjectWithTag("RButton").GetComponentInChildren<Text>().text = "R";
+        }
+    }
+
+    public void qAction()
+    {
+        foreach (var unit in selected)
+        {
+            if (!(unit.GetComponent<UnitScript>().isTransforming || unit.GetComponent<UnitScript>().isLocked))
+                unit.GetComponent<UnitScript>().actionQ();
+        }
+    }
+
+    public void wAction()
+    {
+        foreach (var unit in selected)
+        {
+            if (!(unit.GetComponent<UnitScript>().isTransforming || unit.GetComponent<UnitScript>().isLocked))
+                unit.GetComponent<UnitScript>().actionW();
+        }
+    }
+
+    public void eAction()
+    {
+        foreach (var unit in selected)
+        {
+            if (!(unit.GetComponent<UnitScript>().isTransforming || unit.GetComponent<UnitScript>().isLocked))
+                unit.GetComponent<UnitScript>().actionE();
+        }
+    }
+
+    public void rAction()
+    {
+        foreach (var unit in selected)
+        {
+            if (!(unit.GetComponent<UnitScript>().isTransforming || unit.GetComponent<UnitScript>().isLocked))
+                unit.GetComponent<UnitScript>().actionR();
+        }
+    }
 
     void LateUpdate()
     {
@@ -51,7 +110,7 @@ public class PlayerScript : ForcesScript {
                 }
                 performingAction = false;
             }
-            else
+            else if (Input.mousePosition.x > 300 && Input.mousePosition.y > 55)
             {
                 foreach (var unit in selected)
                 {
@@ -78,6 +137,7 @@ public class PlayerScript : ForcesScript {
         //todo for now only selecting
         if (obj.tag == "Selectable")
         {
+            Debug.Log("djobhdfu");
            unselectAll();
             obj.GetComponent<UnitScript>().select();
             selectHit = true;
@@ -125,6 +185,7 @@ public class PlayerScript : ForcesScript {
 
     public void unselectAll()
     {
+        Debug.Log("unselect all");
         foreach (var unit in selected)
         {
             unit.GetComponent<UnitScript>().unselect_noremove();

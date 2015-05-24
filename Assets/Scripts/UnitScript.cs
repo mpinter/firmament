@@ -50,6 +50,11 @@ public class UnitScript : MonoComponents
     public float transformTimer = 0.0f;
     public float transformCoef = 0.0f;
 
+    public string qText = "Rekt";
+    public string wText = "So";
+    public string eText = "Hard";
+    public string rText = "Bro";
+
     public Vector3 asteroidDrag;
 
     public int owner=0;
@@ -153,6 +158,12 @@ public class UnitScript : MonoComponents
 	void FixedUpdate () {
 	    if (!isTransforming) checkMove();
 	}
+
+    public void Cancel()
+    {
+        if (productionQueue!=null) productionQueue.Clear();
+        if (!targetScriptList[0].positions[gameObject].isCircular) targetScriptList.Clear();
+    }
 
     private void updateQueue()
     {
@@ -572,21 +583,91 @@ public class UnitScript : MonoComponents
         }
     }
 
+    public void actionW()
+    {
+        switch (unitType)
+        {
+            case UnitType.basePlanet:
+            case UnitType.fighterPlanet:
+            case UnitType.artilleryPlanet:
+            case UnitType.capitalPlanet:
+                productionQueue.Add(new ProductionItem("Prefabs/wut", 3, 10f, planetRadius + 1, 0, false));
+                break;
+            case UnitType.vector:
+                isTransforming = true;
+                unitType = UnitType.miner;
+                //todo change sprite
+                GetComponent<SpriteRenderer>().sprite = Resources.Load("Sprites/Placehold/transform", typeof(Sprite)) as Sprite;
+                transformTimer = 100;
+                transformCoef = 10;
+                break;
+        }
+    }
+
+    public void actionE()
+    {
+        switch (unitType)
+        {
+            case UnitType.basePlanet:
+            case UnitType.fighterPlanet:
+            case UnitType.artilleryPlanet:
+            case UnitType.capitalPlanet:
+                productionQueue.Add(new ProductionItem("Prefabs/wut", 3, 10f, planetRadius + 1, 0, false));
+                break;
+            case UnitType.vector:
+                isTransforming = true;
+                unitType = UnitType.miner;
+                //todo change sprite
+                GetComponent<SpriteRenderer>().sprite = Resources.Load("Sprites/Placehold/transform", typeof(Sprite)) as Sprite;
+                transformTimer = 100;
+                transformCoef = 10;
+                break;
+        }
+    }
+    
+    public void actionR()
+    {
+        switch (unitType)
+        {
+            case UnitType.basePlanet:
+            case UnitType.fighterPlanet:
+            case UnitType.artilleryPlanet:
+            case UnitType.capitalPlanet:
+                productionQueue.Add(new ProductionItem("Prefabs/wut", 3, 10f, planetRadius + 1, 0, false));
+                break;
+            case UnitType.vector:
+                isTransforming = true;
+                unitType = UnitType.miner;
+                //todo change sprite
+                GetComponent<SpriteRenderer>().sprite = Resources.Load("Sprites/Placehold/transform", typeof(Sprite)) as Sprite;
+                transformTimer = 100;
+                transformCoef = 10;
+                break;
+        }
+    }
+
     //also sets enemy layer masks
     private void setOwner(int ownerId)
     {
         owner = ownerId;
-        for (int i = 0; i < 8; i++)
-        {
-            if (i == ownerId) continue;
-            enemiesLayerMask += 1 << (i + 16);
-        }
         if (ownerId == 0)
         {
             forcesScript = playerScript;
+            gameObject.layer = ownerId + 16;
+            for (int i = 0; i < 8; i++)
+            {
+                if (i == ownerId) continue;
+                enemiesLayerMask += 1 << (i + 16);
+            }
         }
         else if (ownerId > 0)
         {
+            gameObject.layer = ownerId + 16;
+            for (int i = 0; i < 8; i++)
+            {
+                if (i == ownerId) continue;
+                enemiesLayerMask += 1 << (i + 16);
+            }
             foreach (var ai in GameObject.FindGameObjectsWithTag("AI"))
             {
                 if (ai.GetComponent<AIScript>().id == ownerId)
