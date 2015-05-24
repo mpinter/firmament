@@ -9,6 +9,7 @@ public class MarkerScript : MonoComponents {
     public Dictionary<GameObject,Position> positions=new Dictionary<GameObject, Position>();
     private int capitalCount;
     public UnitScript parentScript=null;
+    public float orbit=10.0f;
 
     private Vector3 previousPos;
 
@@ -26,14 +27,13 @@ public class MarkerScript : MonoComponents {
         private float radius = 2.0f; //todo set in contructor (for planets and stuff, later add boolean if supposed to scale)
         private bool isAgile;
 
-        public Position(GameObject which, UnitScript whereScript,Transform mt,float radiusScale=1.0f)
+        public Position(GameObject which, UnitScript whereScript,Transform mt,float radiusScale=-1.0f)
         {
             markerPos = mt;
             UnitScript whichScript = which.GetComponent<UnitScript>();
             if (whereScript == null)
             {
                 isAgile = whichScript.agile;
-                radius *= radiusScale;
             }
             else
             {
@@ -43,7 +43,7 @@ public class MarkerScript : MonoComponents {
                 {
                     Debug.Log("circular");
                     //get closest point
-                    radius = whereScript.planetRadius;
+                    radius = (radiusScale<0) ? whereScript.planetRadius : radiusScale;
                     angle = (Vector3.Angle(mt.up, which.transform.position - mt.position) + 90);
                     if (Vector3.Cross(mt.up, which.transform.position - mt.position).z < 0f) angle += 90;
                     if ((which.transform.position.x > mt.position.x) && (which.transform.position.y > mt.position.y)) angle += 180;
@@ -71,12 +71,12 @@ public class MarkerScript : MonoComponents {
             isset = true;
             if (isCircular)
             {
-                angle += speed*radius*Time.deltaTime;
+                angle += speed*Time.deltaTime;
                 return getTargetPosition();
             }
             else if (isAgile)
             {
-                pos = (follow) ? Vector2.zero : Random.insideUnitCircle*radius ;
+                pos = (follow) ? Vector2.zero : Random.insideUnitCircle*radius;
                 return pos + markerPos.position;
             }
             else if (follow)
@@ -217,7 +217,7 @@ public class MarkerScript : MonoComponents {
     {
         Debug.Log("forcing position");
         obj.GetComponent<UnitScript>().targetScriptList.Add(this);
-        positions.Add(obj, new Position(which,whereScript,mt));
+        positions.Add(obj, new Position(which,whereScript,mt,orbit));
     }
 
     public void unassign(GameObject obj)

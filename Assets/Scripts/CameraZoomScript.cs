@@ -9,7 +9,7 @@ public class CameraZoomScript : MonoBehaviour {
     public float targetOrtho;
     public float smoothSpeed = 20.0f;
     public float minOrtho = 1.0f;
-    public float maxOrtho = 40.0f;
+    public float maxOrtho = 55.0f;
 
     public float keyScrollSpeed = 10.0f;
     public float mouseScrollSpeed = 5.0f;

@@ -10,7 +10,7 @@ public class UnitScript : MonoComponents
 
     public enum UnitType
     {
-        transforming, vector, miner, fighter, artillery, capital, satelite, basePlanet, fighterPlanet, artilleryPlanet, capitalPlanet, blackHole, other
+        transforming, vector, miner, fighter, artillery, capital, satelite, basePlanet, fighterPlanet, artilleryPlanet, capitalPlanet, blackHole, planet, other, sun
     };
 
     public UnitType unitType = UnitType.other;
@@ -541,7 +541,7 @@ public class UnitScript : MonoComponents
     public void startTerraforming(GameObject planet)
     {
         UnitScript planetScript = planet.GetComponent<UnitScript>();
-        if (planetScript.owner < 0)
+        if (planetScript.owner < 0 && planetScript.unitType==UnitType.planet)
         {
             planetScript.setOwner(owner);
             planetScript.startBuildingPlanet(UnitType.basePlanet);
