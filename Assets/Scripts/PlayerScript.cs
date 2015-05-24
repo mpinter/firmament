@@ -113,7 +113,7 @@ public class PlayerScript : ForcesScript {
                 }
                 performingAction = false;
             }
-            else if (Input.mousePosition.x > 300 && Input.mousePosition.y > 55)
+            else if (!(Input.mousePosition.x < 300 && Input.mousePosition.y < 55))
             {
                 foreach (var unit in selected)
                 {

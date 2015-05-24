@@ -27,8 +27,16 @@ public class MarkerScript : MonoComponents {
         private float radius = 2.0f; //todo set in contructor (for planets and stuff, later add boolean if supposed to scale)
         private bool isAgile;
 
-        public Position(GameObject which, UnitScript whereScript,Transform mt,float radiusScale=-1.0f)
+        public Position(GameObject which, UnitScript whereScript,Transform mt,float radiusScale=-1.0f,bool forceCircular=false)
         {
+            if (radiusScale < 0f)
+            {
+                speed = which.GetComponent<UnitScript>().speedMax;
+            }
+            else
+            {
+                speed = (0.01f + Random.Range(0f, 0.07f))/radius;
+            }
             markerPos = mt;
             UnitScript whichScript = which.GetComponent<UnitScript>();
             if (whereScript == null)
@@ -38,19 +46,19 @@ public class MarkerScript : MonoComponents {
             else
             {
                 isCircular = whereScript.isStructure;
+                if (forceCircular) isCircular = true;
                 follow = !isCircular;
                 if (isCircular)
                 {
-                    Debug.Log("circular");
                     //get closest point
                     radius = (radiusScale<0) ? whereScript.planetRadius : radiusScale;
                     angle = (Vector3.Angle(mt.up, which.transform.position - mt.position) + 90);
                     if (Vector3.Cross(mt.up, which.transform.position - mt.position).z < 0f) angle += 90;
                     if ((which.transform.position.x > mt.position.x) && (which.transform.position.y > mt.position.y)) angle += 180;
                     angle*= Mathf.Deg2Rad;
+                    angle += Random.Range(-0.8f, 0.8f);
                 }
             }
-            speed = whichScript.speedMax;
             isset = false;
         }
 
@@ -200,7 +208,7 @@ public class MarkerScript : MonoComponents {
             }
             obj.GetComponent<UnitScript>().targetScriptList.Add(this);    
         }
-        positions.Add(obj,new Position(obj,parentScript,gameObject.GetComponent<Transform>(),positions.Count/10+1));
+        positions.Add(obj,new Position(obj,parentScript,gameObject.GetComponent<Transform>()));
         if (obj.GetComponent<UnitScript>().capital)
         {
             capitalCount++;
@@ -215,9 +223,8 @@ public class MarkerScript : MonoComponents {
     //use with caution, currently used for orbiting planets and satellites
     public void forcePosition(GameObject obj, GameObject which, UnitScript whereScript, Transform mt)
     {
-        Debug.Log("forcing position");
         obj.GetComponent<UnitScript>().targetScriptList.Add(this);
-        positions.Add(obj, new Position(which,whereScript,mt,orbit));
+        positions.Add(obj, new Position(which,whereScript,mt,orbit,true));
     }
 
     public void unassign(GameObject obj)

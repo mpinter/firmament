@@ -26,8 +26,7 @@ public class UnitSelectionScript : MonoComponents
     private void checkRectSelect()
     {
         bool previous_select = selected;
-        Debug.Log("rekt?");
-        if (renderer.isVisible && Input.GetMouseButton(0) && Input.mousePosition.x > 300 && Input.mousePosition.y > 55)
+        if (renderer.isVisible && Input.GetMouseButton(0) && !(Input.mousePosition.x < 300 && Input.mousePosition.y < 55))
         {
             Vector3 camPos = Camera.main.WorldToScreenPoint(transform.position);
             camPos.y = CameraScript.invertProjectY(camPos.y);

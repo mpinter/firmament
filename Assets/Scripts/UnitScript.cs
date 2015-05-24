@@ -88,22 +88,28 @@ public class UnitScript : MonoComponents
             remainingTime = resetTime;
         }
 
-        public void Update(Transform t)
+        public void Update(MarkerScript ms,Transform t)
         {
             if (active)
             {
                 remainingTime -= Time.deltaTime;
-                if (remainingTime < 0) spawn(t);
+                if (remainingTime < 0) spawn(ms,t);
             }
         }
 
-        public void spawn(Transform t)
+        public void spawn(MarkerScript ms, Transform t)
         {
-            if (limit > 0) Mathf.Clamp(quantity, 1, limit);
-            for (int i = 0; i < quantity; i++)
+            int _quan = (endless) ? Mathf.Clamp(quantity, 0, limit) : quantity;
+            for (int i = 0; i < _quan; i++)
             {
                 GameObject latest = Instantiate(Resources.Load(prefabPath, typeof(GameObject))) as GameObject;
                 latest.transform.position = t.position + Vector3.Normalize(Random.insideUnitCircle) * spawnRadius;
+                /*if (latest.GetComponent<UnitScript>().unitType == UnitType.vector)
+                {
+                    Debug.Log("is vector, force ?");
+                    latest.GetComponent<UnitScript>().centerMarker = ms.gameObject;
+                    //ms.forcePosition(latest.gameObject, latest.gameObject, latest.GetComponent<UnitScript>(), t);
+                }*/
             }
             if (endless)
             {
@@ -151,9 +157,13 @@ public class UnitScript : MonoComponents
 	    if ((unitType == UnitType.blackHole) &&(owner>=0))
 	    {
 	        productionQueue=new List<ProductionItem>();
-	        var prod = new ProductionItem("Prefabs/vector", 20, 20, 20, 0, true);
+	        var prod = new ProductionItem("Prefabs/vector", 20, 1, 20, 0, true);
 	        prod.limit = 120 - playerScript.resSecondary;
             productionQueue.Add(prod);
+	    }
+	    if (unitType == UnitType.vector)
+	    {
+	        forcesScript.resSecondary++;
 	    }
 	}
 
@@ -175,15 +185,14 @@ public class UnitScript : MonoComponents
 
     private void updateQueue()
     {
-        Debug.Log(forcesScript);
-        Debug.Log(gameObject);
         if (productionQueue.Count==0) return;
         if (!productionQueue[0].active && productionQueue[0].cost <= forcesScript.resPrimary)
         {
             productionQueue[0].active = true;
             forcesScript.resPrimary -= productionQueue[0].cost;
         }
-        productionQueue[0].Update(transform);
+        if (unitType == UnitType.blackHole) productionQueue[0].limit = 120 - playerScript.resSecondary;
+        productionQueue[0].Update(markerScript,transform);
         if (productionQueue[0].remainingTime<0) productionQueue.RemoveAt(0);
     }
 
@@ -394,6 +403,10 @@ public class UnitScript : MonoComponents
         //do when thinking
         //todo list forces
         if (playerScript!=null) unselect();
+        if (unitType == UnitType.vector)
+        {
+            forcesScript.resSecondary--;
+        }
         foreach (var target in targetScriptList)
         {
             if (target!=null) target.unassign_noremove(gameObject);
@@ -463,7 +476,7 @@ public class UnitScript : MonoComponents
             }
             
         }
-        else if (targetScriptList[0].parentScript.owner == owner)
+        else if ((targetScriptList[0].parentScript.owner == owner) && (!targetScriptList[0].parentScript.isTransforming))
         {
             if (currentLoad > 0)
             {
@@ -488,8 +501,18 @@ public class UnitScript : MonoComponents
             {
                 //a bit unsafe, but if it crashes here at least I should know what is wrong
                 //todo finetune parameters
-                transformCoef = (101 - targetScriptList[0].parentScript.transformTimer) / 100.0f;
-                targetScriptList[0].parentScript.transformTimer -= transformCoef*Time.deltaTime;
+                if (targetScriptList[0] != null)
+                {
+                    transformCoef = (101 - targetScriptList[0].parentScript.transformTimer)/100.0f;
+                    if (targetScriptList[0].parentScript.isLocked)
+                    {
+                        targetScriptList[0].parentScript.transformTimer -= transformCoef*Time.deltaTime;
+                    }
+                    else
+                    {
+                        Destroy(gameObject);
+                    }
+                }
             }
             transformTimer -= transformCoef*Time.deltaTime;
         }
@@ -579,7 +602,7 @@ public class UnitScript : MonoComponents
             case UnitType.vector:
                 isTransforming = true;
                 unitType = UnitType.miner;
-                //todo change sprite
+                miner = true;
                 GetComponent<SpriteRenderer>().sprite =Resources.Load("Sprites/Placehold/transform", typeof (Sprite)) as Sprite;
                 transformTimer = 100;
                 transformCoef = 10;
@@ -656,9 +679,7 @@ public class UnitScript : MonoComponents
         owner = ownerId;
         if (ownerId == 0)
         {
-            Debug.Log("assssfas");
             forcesScript = playerScript;
-            Debug.Log(forcesScript);
             gameObject.layer = ownerId + 16;
             for (int i = 0; i < 8; i++)
             {
