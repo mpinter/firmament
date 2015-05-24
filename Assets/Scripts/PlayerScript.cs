@@ -40,7 +40,9 @@ public class PlayerScript : ForcesScript {
 
     void OnGUI()
     {
-        Resources
+        GameObject.FindGameObjectWithTag("ResourceText").GetComponent<Text>().text = "Resources: " + resPrimary +
+                                                                                          " Population: " + resSecondary +
+                                                                                          "/120";
         if (selected.Count > 0)
         {
             GameObject.FindGameObjectWithTag("QButton").GetComponentInChildren<Text>().text = selected.First().GetComponent<UnitScript>().qText;

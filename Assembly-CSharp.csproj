@@ -50,6 +50,7 @@
      <Compile Include="Assets\Scripts\CameraScript.cs" />
      <Compile Include="Assets\Scripts\CameraZoomScript.cs" />
      <Compile Include="Assets\Scripts\ForcesScript.cs" />
+     <Compile Include="Assets\Scripts\LaserScript.cs" />
      <Compile Include="Assets\Scripts\MarkerScript.cs" />
      <Compile Include="Assets\Scripts\MasterScript.cs" />
      <Compile Include="Assets\Scripts\MissileScript.cs" />

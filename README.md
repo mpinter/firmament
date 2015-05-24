@@ -2,6 +2,8 @@
 
 Reference guide nasleduje za TODO listom  
 
+* rotate when finished move capitals
+* circular movement after spawn!
 * rally point
 * more inteligent planet avoidance
 * particle system yay

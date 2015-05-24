@@ -130,11 +130,11 @@ public class MarkerScript : MonoComponents {
                 newpos += cross*currentLeftOffset;
                 record.Value.setPosition(newpos);
                 currentRow++;
-                currentLeftOffset -= 1;
+                currentLeftOffset -= 3;
                 if (currentRow == rowLimit)
                 {
                     currentOffset++;
-                    leftOffsetBase += 0.5f;
+                    leftOffsetBase += 1.5f;
                     currentLeftOffset = leftOffsetBase;
                     currentRow = 0;
                     rowLimit *= 2;

@@ -118,9 +118,10 @@ public class UnitScript : MonoComponents
 	    //enemiesLayerMask = 16711680 - (1 << (owner+16));
 	    enemiesLayerMask = 0;
         playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerScript>();
+        setOwner(owner);
 	    if (owner >= 0)
 	    {
-	        setOwner(owner);
+	        //here was once stuff
 	    }
 	    else
 	    {
@@ -144,8 +145,15 @@ public class UnitScript : MonoComponents
         //todo this is for test only - if agile create local marker
 	    if (agile)
 	    {
-            marker = Instantiate(Resources.Load("Prefabs/Marker", typeof(GameObject)),Vector3.zero,Quaternion.identity) as GameObject;
+            marker = Instantiate(Resources.Load("Prefabs/Marker", typeof(GameObject)),transform.position,Quaternion.identity) as GameObject;
             marker.GetComponent<MarkerScript>().assign(gameObject,false);
+	    }
+	    if ((unitType == UnitType.blackHole) &&(owner>=0))
+	    {
+	        productionQueue=new List<ProductionItem>();
+	        var prod = new ProductionItem("Prefabs/vector", 20, 20, 20, 0, true);
+	        prod.limit = 120 - playerScript.resSecondary;
+            productionQueue.Add(prod);
 	    }
 	}
 
@@ -168,6 +176,7 @@ public class UnitScript : MonoComponents
     private void updateQueue()
     {
         Debug.Log(forcesScript);
+        Debug.Log(gameObject);
         if (productionQueue.Count==0) return;
         if (!productionQueue[0].active && productionQueue[0].cost <= forcesScript.resPrimary)
         {
@@ -556,11 +565,6 @@ public class UnitScript : MonoComponents
         }
     }
 
-    private void produce(UnitType productionType)
-    {
-        
-    }
-
     //this is ungly but done due to time constraints, i'd prefer inheritance for diferent units/behaviours
     public void actionQ()
     {
@@ -652,7 +656,9 @@ public class UnitScript : MonoComponents
         owner = ownerId;
         if (ownerId == 0)
         {
+            Debug.Log("assssfas");
             forcesScript = playerScript;
+            Debug.Log(forcesScript);
             gameObject.layer = ownerId + 16;
             for (int i = 0; i < 8; i++)
             {
