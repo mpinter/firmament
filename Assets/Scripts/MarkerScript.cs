@@ -31,7 +31,7 @@ public class MarkerScript : MonoComponents {
         {
             if (radiusScale < 0f)
             {
-                speed = which.GetComponent<UnitScript>().speedMax;
+                speed = which.GetComponent<UnitScript>().speedMax*10;
             }
             else
             {
@@ -80,6 +80,8 @@ public class MarkerScript : MonoComponents {
             if (isCircular)
             {
                 angle += speed*Time.deltaTime;
+                //Debug.Log(angle);
+                //Debug.Log(speed);
                 return getTargetPosition();
             }
             else if (isAgile)

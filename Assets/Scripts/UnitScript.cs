@@ -270,7 +270,7 @@ public class UnitScript : MonoComponents
                     {
                         if (targetScriptList[0].positions[gameObject].isCircular)
                         {
-                            Orbit(targetScriptList[0].positions[gameObject].generateNewTargetPosition() + targetScriptList[0].getOffset());
+                            Orbit(targetScriptList[0].positions[gameObject].generateNewTargetPosition() /*+ targetScriptList[0].getOffset()*/);
                             if (miner) checkMine();
                             if (unitType == UnitType.vector) startTerraforming(targetScriptList[0].parentScript.gameObject);
                         }
