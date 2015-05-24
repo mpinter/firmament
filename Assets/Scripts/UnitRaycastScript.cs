@@ -106,18 +106,18 @@ public class UnitRaycastScript : MonoComponents
 	                        (Quaternion.Euler(0, 0, Random.Range(ranges[range].Key, ranges[range].Value))*transform.up),
 	                        attackRange,
 	                        unitScript.enemiesLayerMask);
-                        Debug.Log("tryattack");
+                        //Debug.Log("tryattack");
 	                    if (attackHit.collider != null &&
 	                        !(attackHit.collider.gameObject.GetComponent<UnitScript>().isStructure && unitScript.agile))
 	                    {
-	                        Debug.Log("ATTACK!");
+	                        //Debug.Log("ATTACK!");
 	                        //Debug.Log(attackHit.distance);
 	                        if (unitScript.targetScriptList.Count > 0 &&
 	                            (unitScript.targetScriptList[0].parentScript ==
 	                             attackHit.collider.GetComponent<UnitScript>() ||
 	                             !unitScript.targetScriptList[0].positions[gameObject].attack))
 	                        {
-	                            Debug.Log("already attacking");
+	                            //Debug.Log("already attacking");
 	                            shootAt(attackHit.collider.gameObject, range);
 	                            //Debug.Log(unitScript.targetScriptList[0].positions[gameObject].attack);
 
@@ -128,14 +128,14 @@ public class UnitRaycastScript : MonoComponents
 	                                  !unitScript.targetScriptList[0].positions[gameObject].isCircular))
 	                        {
 	                            //add marker beginning
-	                            //Debug.Log("ADD MARKER"); //todo attack move and check this
+	                            Debug.Log("ADD MARKER"); //todo attack move and check this
 	                            attackHit.collider.GetComponent<UnitScript>().markerScript.assignFront(gameObject);
 	                            unitScript.targetScriptList[0].positions[gameObject].attack = true;
 	                            shootAt(attackHit.collider.gameObject, range);
 	                        }
 	                        else
 	                        {
-	                            Debug.Log("Could shoot, but why bother?");
+	                            //Debug.Log("Could shoot, but why bother?");
 	                            currentCd[range] += Random.Range(0.0f, 0.5f);
 	                        }
 	                        if (unitScript.targetScriptList.Count > 0 &&
@@ -143,7 +143,7 @@ public class UnitRaycastScript : MonoComponents
 	                        {
 	                            //casually shoot at things I encounter
 	                            //covered in first if, this just for debug
-	                            Debug.Log("Casual scrub");
+	                            //Debug.Log("Casual scrub");
 	                        }
 
 	                    }
@@ -185,7 +185,7 @@ public class UnitRaycastScript : MonoComponents
         //instantiate shot
         //give it target
         //shot script - on destroy reduce hp
-        Debug.Log(target);
+        //Debug.Log(target);
         GameObject missile = Instantiate(Resources.Load(guns[gunId], typeof (GameObject))) as GameObject;
         missile.transform.position = gameObject.transform.position;
         if (missile.GetComponent<MissileScript>().laser) missile.transform.parent = gameObject.transform;

@@ -627,7 +627,7 @@ public class UnitScript : MonoComponents
             GetComponent<SpriteRenderer>().sprite = Resources.Load("Sprites/Misc/transparency_hack", typeof(Sprite)) as Sprite;
             primaryThrust.Stop();
             transformParticles.Play();
-            //todo particles
+            mineParticles.Play();
         }
     }
 

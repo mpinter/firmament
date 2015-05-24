@@ -9,6 +9,7 @@ public class MarkerScript : MonoComponents {
     public Dictionary<GameObject,Position> positions=new Dictionary<GameObject, Position>();
     private int capitalCount;
     public UnitScript parentScript=null;
+    public bool hasParent = false;
     public float orbit=10.0f;
 
     private Vector3 previousPos;
@@ -160,6 +161,8 @@ public class MarkerScript : MonoComponents {
 
     void Update()
     {
+        if (parentScript != null) hasParent = true;
+        if (hasParent && parentScript==null) Remove();
         if (parentScript==null && positions.Count==0) Destroy(gameObject);
     }
 
