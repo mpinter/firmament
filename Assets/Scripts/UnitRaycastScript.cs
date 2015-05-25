@@ -92,13 +92,14 @@ public class UnitRaycastScript : MonoComponents
 	    {
 	        if (unitScript.isTransforming || (unitScript.isLocked && unitScript.unitType != UnitScript.UnitType.satelite))
 	            return;
-	        RaycastHit2D avoidHit = Physics2D.Raycast(transform.position, transform.up, avoidRange, (1 << 8)+unitScript.enemiesLayerMask+(1 << (unitScript.owner+16)));
+	        RaycastHit2D avoidHit = Physics2D.Raycast(transform.position, transform.up, avoidRange, (1 << 8));
 	        Debug.DrawLine(transform.position, transform.position + transform.up*avoidRange, Color.green);
 	        if (avoidHit.collider != null)
 	        {
 	            Transform planetPos = avoidHit.collider.GetComponent<Transform>();
 	            UnitScript planetScript = avoidHit.collider.GetComponent<UnitScript>();
-	            if (!(unitScript.targetScriptList.Count > 0 && planetScript.isStructure && unitScript.targetScriptList[0] == planetScript.markerScript))
+                //ugly (no time :( ) and yet unsafe.. but will work with current setup
+                if (!(unitScript.targetScriptList.Count > 0 && planetScript.isStructure && ((planetScript == null && avoidHit.collider.gameObject.GetComponentInParent<UnitScript>() != null && avoidHit.collider.gameObject.GetComponentInParent<UnitScript>() != null && unitScript.targetScriptList[0] == avoidHit.collider.gameObject.GetComponentInParent<UnitScript>().markerScript) || (planetScript != null && unitScript.targetScriptList[0] == planetScript.markerScript))))
 	            {
 	                unitScript.avoiding = true;
 	                //get center, calculate angle

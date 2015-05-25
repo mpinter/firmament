@@ -779,7 +779,7 @@ public class UnitScript : MonoComponents
             for (int i = 0; i < 8; i++)
             {
                 if (i == ownerId) continue;
-                enemiesLayerMask += 1 << (i + 16);
+                enemiesLayerMask = enemiesLayerMask | 1 << (i + 16);
             }
         }
         else if (ownerId > 0)
@@ -788,7 +788,7 @@ public class UnitScript : MonoComponents
             for (int i = 0; i < 8; i++)
             {
                 if (i == ownerId) continue;
-                enemiesLayerMask += 1 << (i + 16);
+                enemiesLayerMask = enemiesLayerMask | 1 << (i + 16);
             }
             foreach (var ai in GameObject.FindGameObjectsWithTag("AI"))
             {
