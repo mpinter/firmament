@@ -52,10 +52,10 @@ public class UnitScript : MonoComponents
     public float transformTimer = 0.0f;
     public float transformCoef = 0.0f;
 
-    public string qText = "Rekt";
-    public string wText = "So";
-    public string eText = "Hard";
-    public string rText = "Bro";
+    public string qText = "";
+    public string wText = "";
+    public string eText = "";
+    public string rText = "";
 
     public Vector3 asteroidDrag;
 
@@ -206,6 +206,10 @@ public class UnitScript : MonoComponents
             progress.GetComponentInChildren<Image>().type = Image.Type.Filled;
         }
 	    healthMax = hp;
+	    if (owner >= 0 && !isStructure)
+	    {
+	        forcesScript.units.Add(gameObject);
+	    }
 	}
 
     void Update()
@@ -345,7 +349,7 @@ public class UnitScript : MonoComponents
                 Vector3.Distance(targetScriptList[0].positions[gameObject].getTargetPosition(),
                     gameObject.GetComponent<Transform>().position) < 1.0f)
             {
-                if (targetScriptList.Count > 1)
+                if (targetScriptList.Count > 1 && !miner) //miners need to rally up and down
                 {
                     targetScriptList[0].unassign(gameObject);
                     checkMove();
@@ -591,6 +595,7 @@ public class UnitScript : MonoComponents
             }
             else
             {
+                Debug.Log("sending home");
                 mineParticles.Stop();
                 currentLoad = maxLoad;
                 lastMined = targetScriptList[0];
