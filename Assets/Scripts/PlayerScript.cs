@@ -9,7 +9,8 @@ public class PlayerScript : ForcesScript {
 
     public HashSet<GameObject> selected=new HashSet<GameObject>();
     private bool selectHit = false; //check if unit was succesfully clicked this frame
-    public Dictionary<GameObject,GameObject> selectedDraw = new Dictionary<GameObject, GameObject>(); 
+    public Dictionary<GameObject,GameObject> selectedDraw = new Dictionary<GameObject, GameObject>();
+    //public Dictionary<GameObject, GameObject> shownMarkers = new Dictionary<GameObject, GameObject>();
 
     //todo null && switch actions
     public bool performingAction = false;
@@ -28,6 +29,22 @@ public class PlayerScript : ForcesScript {
         if (Input.GetKeyDown(KeyCode.Q))
         {
             qAction();
+        }
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            wAction();
+        }
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            eAction();
+        }
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            rAction();
+        }
+        if (Input.GetKey(KeyCode.Tab))
+        {
+            resPrimary += 47;
         }
         if (Input.GetKeyDown(KeyCode.Escape))
         {

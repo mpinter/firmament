@@ -648,11 +648,26 @@ public class UnitScript : MonoComponents
     {
         switch (unitType)
         {
-            case UnitType.basePlanet:
             case UnitType.fighterPlanet:
+                if (forcesScript.resPrimary > 100)
+                {
+                    forcesScript.resPrimary -= 100;
+                    productionQueue.Add(new ProductionItem("Prefabs/fighter", 4, 5f, planetRadius + 1, 0, false));
+                }
+                break;
             case UnitType.artilleryPlanet:
+                if (forcesScript.resPrimary > 100)
+                {
+                    forcesScript.resPrimary -= 100;
+                    productionQueue.Add(new ProductionItem("Prefabs/artillery", 2, 5f, planetRadius + 1, 0, false));
+                }
+                break;
             case UnitType.capitalPlanet:
-                productionQueue.Add(new ProductionItem("Prefabs/wut",3,10f,planetRadius+1,0,false));
+                if (forcesScript.resPrimary > 100)
+                {
+                    forcesScript.resPrimary -= 100;
+                    productionQueue.Add(new ProductionItem("Prefabs/capital", 1, 10f, planetRadius + 1, 0, false));
+                }
                 break;
             case UnitType.vector:
                 isTransforming = true;
@@ -673,18 +688,11 @@ public class UnitScript : MonoComponents
         switch (unitType)
         {
             case UnitType.basePlanet:
-            case UnitType.fighterPlanet:
-            case UnitType.artilleryPlanet:
-            case UnitType.capitalPlanet:
-                productionQueue.Add(new ProductionItem("Prefabs/wut", 3, 10f, planetRadius + 1, 0, false));
-                break;
-            case UnitType.vector:
-                isTransforming = true;
-                unitType = UnitType.miner;
-                //todo change sprite
-                GetComponent<SpriteRenderer>().sprite = Resources.Load("Sprites/Placehold/transform", typeof(Sprite)) as Sprite;
-                transformTimer = 100;
-                transformCoef = 10;
+                if (forcesScript.resPrimary > 1000)
+                {
+                    forcesScript.resPrimary -= 1000;
+                    startBuildingPlanet(UnitType.fighterPlanet);
+                }
                 break;
         }
     }
@@ -694,18 +702,11 @@ public class UnitScript : MonoComponents
         switch (unitType)
         {
             case UnitType.basePlanet:
-            case UnitType.fighterPlanet:
-            case UnitType.artilleryPlanet:
-            case UnitType.capitalPlanet:
-                productionQueue.Add(new ProductionItem("Prefabs/wut", 3, 10f, planetRadius + 1, 0, false));
-                break;
-            case UnitType.vector:
-                isTransforming = true;
-                unitType = UnitType.miner;
-                //todo change sprite
-                GetComponent<SpriteRenderer>().sprite = Resources.Load("Sprites/Placehold/transform", typeof(Sprite)) as Sprite;
-                transformTimer = 100;
-                transformCoef = 10;
+                if (forcesScript.resPrimary > 1000)
+                {
+                    forcesScript.resPrimary -= 1000;
+                    startBuildingPlanet(UnitType.artilleryPlanet);  
+                }
                 break;
         }
     }
@@ -715,18 +716,11 @@ public class UnitScript : MonoComponents
         switch (unitType)
         {
             case UnitType.basePlanet:
-            case UnitType.fighterPlanet:
-            case UnitType.artilleryPlanet:
-            case UnitType.capitalPlanet:
-                productionQueue.Add(new ProductionItem("Prefabs/wut", 3, 10f, planetRadius + 1, 0, false));
-                break;
-            case UnitType.vector:
-                isTransforming = true;
-                unitType = UnitType.miner;
-                //todo change sprite
-                GetComponent<SpriteRenderer>().sprite = Resources.Load("Sprites/Placehold/transform", typeof(Sprite)) as Sprite;
-                transformTimer = 100;
-                transformCoef = 10;
+                if (forcesScript.resPrimary > 1000)
+                {
+                    forcesScript.resPrimary -= 1000;
+                    startBuildingPlanet(UnitType.capitalPlanet);
+                }
                 break;
         }
     }
