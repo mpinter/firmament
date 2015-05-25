@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Scripts\AIScript.cs" />
+     <Compile Include="Assets\Scripts\BackgroundCameraScript.cs" />
      <Compile Include="Assets\Scripts\CameraScript.cs" />
      <Compile Include="Assets\Scripts\CameraZoomScript.cs" />
      <Compile Include="Assets\Scripts\ForcesScript.cs" />

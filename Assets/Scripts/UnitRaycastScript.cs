@@ -92,7 +92,7 @@ public class UnitRaycastScript : MonoComponents
 	    {
 	        if (unitScript.isTransforming || (unitScript.isLocked && unitScript.unitType != UnitScript.UnitType.satelite))
 	            return;
-	        RaycastHit2D avoidHit = Physics2D.Raycast(transform.position, transform.up, avoidRange, (1 << 8)+unitScript.enemiesLayerMask+(1 << unitScript.owner));
+	        RaycastHit2D avoidHit = Physics2D.Raycast(transform.position, transform.up, avoidRange, (1 << 8)+unitScript.enemiesLayerMask+(1 << (unitScript.owner+16)));
 	        Debug.DrawLine(transform.position, transform.position + transform.up*avoidRange, Color.green);
 	        if (avoidHit.collider != null)
 	        {

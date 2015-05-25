@@ -515,7 +515,7 @@ public class UnitScript : MonoComponents
             }
             
         }
-        else if ((targetScriptList[0].parentScript.owner == owner) && (!targetScriptList[0].parentScript.isTransforming))
+        else if ((targetScriptList[0].parentScript.owner == owner) && (!targetScriptList[0].parentScript.isLocked && targetScriptList[0].parentScript.unitType==UnitType.basePlanet))
         {
             if (currentLoad > 0)
             {
@@ -584,6 +584,37 @@ public class UnitScript : MonoComponents
                     //todo change sprite - building complete
                     GetComponent<SpriteRenderer>().sprite = Resources.Load("Sprites/Placehold/planets_01", typeof(Sprite)) as Sprite;
                     isLocked = false;
+                    switch (unitType)
+                    {
+                        case UnitType.basePlanet:
+                            hp = 10000;
+                            qText = "";
+                            wText = "Fight.Pl.  1000";
+                            eText = "Art.Pl.  1000";
+                            rText = "Cap.Pl.   10000";
+                            break;
+                        case UnitType.fighterPlanet:
+                            hp = 50000;
+                            qText = "Fighter  100";
+                            wText = "";
+                            eText = "";
+                            rText = "";
+                            break;
+                        case UnitType.artilleryPlanet:
+                            hp = 50000;
+                            qText = "Artillery  100";
+                            wText = "";
+                            eText = "";
+                            rText = "";
+                            break;
+                        case UnitType.capitalPlanet:
+                            hp = 100000;
+                            qText = "CapitalShip  1000";
+                            wText = "";
+                            eText = "";
+                            rText = "";
+                            break;
+                    }
                 }
                 else
                 {
@@ -606,19 +637,31 @@ public class UnitScript : MonoComponents
         {
             case UnitType.basePlanet:
                 transformCoef = 0.0f;
-                hp = 1000;
+                qText = "";
+                wText = "";
+                eText = "";
+                rText = "";
                 break;
             case UnitType.fighterPlanet:
                 transformCoef = 5.0f;
-                hp = 10000;
+                qText = "";
+                wText = "";
+                eText = "";
+                rText = "";
                 break;
             case UnitType.artilleryPlanet:
                 transformCoef = 5.0f;
-                hp = 10000;
+                qText = "";
+                wText = "";
+                eText = "";
+                rText = "";
                 break;
             case UnitType.capitalPlanet:
                 transformCoef = 5.0f;
-                hp = 100000;
+                qText = "";
+                wText = "";
+                eText = "";
+                rText = "";
                 break;
         }
     }

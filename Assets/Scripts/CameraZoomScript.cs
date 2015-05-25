@@ -22,10 +22,12 @@ public class CameraZoomScript : MonoBehaviour {
         if (Input.GetAxis("Mouse ScrollWheel") < 0) // forward
          {
              targetOrtho+=2.0f;
+             //if (targetOrtho < maxOrtho) GameObject.FindGameObjectWithTag("Background").transform.localScale += Vector3.one*2;
          }
          if (Input.GetAxis("Mouse ScrollWheel") > 0) // back
          {
-             targetOrtho-=2.0f;
+             targetOrtho -= 2.0f;
+             //if (targetOrtho > minOrtho) GameObject.FindGameObjectWithTag("Background").transform.localScale -= Vector3.one * 2;
          }
         targetOrtho=Mathf.Clamp(targetOrtho, minOrtho, maxOrtho);
         Camera.main.orthographicSize = Mathf.MoveTowards(Camera.main.orthographicSize, targetOrtho, smoothSpeed * Time.deltaTime);
