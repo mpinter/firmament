@@ -97,7 +97,7 @@ public class PlayerScript : ForcesScript {
             }
         }
         //since this is relatively cheap enough and requires less thinking than removing only the required ones
-        foreach (var unit in selectedDraw.Keys)
+        foreach (var unit in selectedDraw.Keys.ToArray())
         {
             if (!selected.Contains(unit))
             {
