@@ -50,6 +50,7 @@
      <Compile Include="Assets\Scripts\BackgroundCameraScript.cs" />
      <Compile Include="Assets\Scripts\CameraScript.cs" />
      <Compile Include="Assets\Scripts\CameraZoomScript.cs" />
+     <Compile Include="Assets\Scripts\FixRotationScript.cs" />
      <Compile Include="Assets\Scripts\ForcesScript.cs" />
      <Compile Include="Assets\Scripts\LaserScript.cs" />
      <Compile Include="Assets\Scripts\MarkerScript.cs" />
@@ -59,6 +60,7 @@
      <Compile Include="Assets\Scripts\PlayerScript.cs" />
      <Compile Include="Assets\Scripts\ProductionItem.cs" />
      <Compile Include="Assets\Scripts\SecondLaserScript.cs" />
+     <Compile Include="Assets\Scripts\TestRotationScript.cs" />
      <Compile Include="Assets\Scripts\UnitRaycastScript.cs" />
      <Compile Include="Assets\Scripts\UnitScript.cs" />
      <Compile Include="Assets\Scripts\UnitSelectionScript.cs" />

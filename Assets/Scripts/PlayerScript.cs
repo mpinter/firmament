@@ -111,7 +111,7 @@ public class PlayerScript : ForcesScript {
     {
         GameObject.FindGameObjectWithTag("ResourceText").GetComponent<Text>().text = "Resources: " + resPrimary +
                                                                                           " Population: " + resSecondary +
-                                                                                          "/120";
+                                                                                          "/" + (120-structures.Count*30);
         if (selected.Count > 0)
         {
             GameObject.FindGameObjectWithTag("QButton").GetComponentInChildren<Text>().text = selected.First().GetComponent<UnitScript>().qText;

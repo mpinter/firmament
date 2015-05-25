@@ -28,12 +28,14 @@ public class UnitRaycastScript : MonoComponents
 	    {
 	        case UnitScript.UnitType.vector:
                 ranges.Add(new KeyValuePair<float, float>(0.0f,0.0f));
-                currentCd.Add(5.0f);
+                currentCd.Add(1.0f);
+	            weaponCd = (1.0f);
                 guns.Add("Prefabs/Phaserz");
 	            break;
             case UnitScript.UnitType.artillery:
                 ranges.Add(new KeyValuePair<float, float>(0.0f, 0.0f));
-                currentCd.Add(15.0f);
+                currentCd.Add(6.0f);
+                weaponCd = (6.0f);
                 guns.Add("Prefabs/Laserz");
                 break;
             case UnitScript.UnitType.fighter:
@@ -44,9 +46,10 @@ public class UnitRaycastScript : MonoComponents
                 ranges.Add(new KeyValuePair<float, float>(180 + 15.0f, 180 + 65.0f));
                 ranges.Add(new KeyValuePair<float, float>(180 + 65.0f, 180 + 115.0f));
                 ranges.Add(new KeyValuePair<float, float>(180 + 115.0f, 180 + 165.0f));
+	            weaponCd = 1.0f;
 	            for (int i = 0; i < 6; i++)
 	            {
-	                currentCd.Add(weaponCd);
+	                currentCd.Add(1.0f);
                     guns.Add("Prefabs/HugeMissile");
 	            }
                 break;
@@ -56,6 +59,7 @@ public class UnitRaycastScript : MonoComponents
                 guns.Add("Prefabs/Laserz");
 	            break;
             case UnitScript.UnitType.capital:
+	            weaponCd = 2.5f;
 	            for (int i = 0; i < 8; i++)
 	            {
 	                if (i%2 == 0)
@@ -67,7 +71,7 @@ public class UnitRaycastScript : MonoComponents
                         ranges.Add(new KeyValuePair<float, float>(290.0f, 360.0f));
 	                }
 	                currentCd.Add(weaponCd);
-	                switch (Random.Range(0,2))
+	                switch (Random.Range(0,3))
 	                {
                         case 0:
                             guns.Add("Prefabs/HugeMissile");
@@ -98,8 +102,8 @@ public class UnitRaycastScript : MonoComponents
 	        {
 	            Transform planetPos = avoidHit.collider.GetComponent<Transform>();
 	            UnitScript planetScript = avoidHit.collider.GetComponent<UnitScript>();
-                //ugly (no time :( ) and yet unsafe.. but will work with current setup
-                if (!(unitScript.targetScriptList.Count > 0 && planetScript.isStructure && ((planetScript == null && avoidHit.collider.gameObject.GetComponentInParent<UnitScript>() != null && avoidHit.collider.gameObject.GetComponentInParent<UnitScript>() != null && unitScript.targetScriptList[0] == avoidHit.collider.gameObject.GetComponentInParent<UnitScript>().markerScript) || (planetScript != null && unitScript.targetScriptList[0] == planetScript.markerScript))))
+                //ugly, todo rewrite
+                if (!(unitScript.targetScriptList.Count > 0 && planetScript.isStructure && ((planetScript == null && avoidHit.collider.gameObject.GetComponentInParent<UnitScript>() != null && avoidHit.collider.gameObject.GetComponentInParent<UnitScript>().markerScript != null && unitScript.targetScriptList[0] == avoidHit.collider.gameObject.GetComponentInParent<UnitScript>().markerScript) || (planetScript != null && unitScript.targetScriptList[0] == planetScript.markerScript))))
 	            {
 	                unitScript.avoiding = true;
 	                //get center, calculate angle

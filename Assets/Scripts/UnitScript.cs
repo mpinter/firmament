@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class UnitScript : MonoComponents
 {
@@ -23,6 +24,7 @@ public class UnitScript : MonoComponents
     public bool miner = false;
 
     public int hp = 500;
+    private int healthMax;
     public float shootDist = 10.0f;
     public float followDist = 10.0f;
     public float speed = 0.05f;
@@ -69,6 +71,10 @@ public class UnitScript : MonoComponents
     public ParticleSystem mineParticles;
 
     public List<ProductionItem> productionQueue;
+
+    public GameObject textStatus;
+    public GameObject progress;
+    public GameObject health;
 
     public class ProductionItem
     {
@@ -189,11 +195,87 @@ public class UnitScript : MonoComponents
 	            }
 	        }
 	    }
+        if (health != null)
+        {
+            health.GetComponentInChildren<Image>().fillMethod=Image.FillMethod.Radial360;
+            health.GetComponentInChildren<Image>().type=Image.Type.Filled;
+        }
+        if (progress != null)
+        {
+            progress.GetComponentInChildren<Image>().fillMethod = Image.FillMethod.Radial360;
+            progress.GetComponentInChildren<Image>().type = Image.Type.Filled;
+        }
+	    healthMax = hp;
 	}
 
     void Update()
     {
         checkTask();
+        if (textStatus != null)
+        {
+            textStatus.transform.position = transform.position;
+        }
+        if (health != null)
+        {
+            //if (unitType == UnitType.blackHole) health.transform.position = transform.TransformPoint(transform.position);
+            if (playerScript.selected.Contains(gameObject) || unitType==UnitType.blackHole)
+            {
+                health.GetComponentInChildren<Image>().enabled = true;
+                health.GetComponentInChildren<Image>().fillAmount=(float)hp/(float)healthMax;
+            }
+            else
+            {
+                health.GetComponentInChildren<Image>().enabled = false;
+            }
+        }
+        if (progress!=null)
+        {
+           // if (unitType == UnitType.blackHole) progress.transform.position = transform.TransformPoint(transform.position);
+            if (playerScript.selected.Contains(gameObject) && isMineable)
+            {
+                progress.GetComponentInChildren<Image>().enabled = true;
+                progress.GetComponentInChildren<Image>().fillAmount = minerals/5000.0f;
+            }
+            else if ((playerScript.selected.Contains(gameObject) || unitType == UnitType.blackHole)&&(owner==0))
+            {
+                progress.GetComponentInChildren<Image>().enabled = true;
+                 if (transformTimer > 0)
+                {
+                    progress.GetComponentInChildren<Image>().fillAmount = (100-transformTimer)/100.0f;
+                    if (textStatus != null)
+                    {
+                        textStatus.transform.FindChild("Status").GetComponent<Text>().text = "Terraforming..";
+                    }
+                } else if (productionQueue != null && productionQueue.Count > 0)
+                {
+                    progress.GetComponentInChildren<Image>().fillAmount=productionQueue[0].remainingTime/productionQueue[0].resetTime;
+                    //also write status
+                    if (textStatus != null)
+                    {
+                        textStatus.transform.FindChild("Status").GetComponent<Text>().text = "Producing " + productionQueue.Count + " squads..";
+                    }
+                }
+                 else
+                 {
+                     //write empty
+                     progress.GetComponentInChildren<Image>().fillAmount = 0.0f;
+                     if (textStatus != null)
+                     {
+                         textStatus.transform.FindChild("Status").GetComponent<Text>().text = "";
+                     }
+                 }
+            }
+            else
+            {
+                progress.GetComponentInChildren<Image>().fillAmount = 0.0f;
+                progress.GetComponentInChildren<Image>().enabled = false;
+                if (textStatus != null)
+                {
+                    textStatus.transform.FindChild("Status").GetComponent<Text>().text = "";
+                }
+            }
+        }
+        
         if (productionQueue != null) updateQueue();
         if ((hp<=0)&&(!isStructure)) Destroy(gameObject);
     }
@@ -216,13 +298,14 @@ public class UnitScript : MonoComponents
             productionQueue[0].active = true;
             forcesScript.resPrimary -= productionQueue[0].cost;
         }
-        if (unitType == UnitType.blackHole) productionQueue[0].limit = 120 - playerScript.resSecondary;
+        if (unitType == UnitType.blackHole) productionQueue[0].limit = 120 - forcesScript.structures.Count*30 - playerScript.resSecondary;
         productionQueue[0].Update(markerScript,transform);
         if (productionQueue[0].remainingTime<0) productionQueue.RemoveAt(0);
     }
 
     private void checkMove()
     {
+        if (unitType==UnitType.blackHole) return;
         if (isMineable)
         {
             //todo finetune
@@ -233,8 +316,7 @@ public class UnitScript : MonoComponents
         {
             if (agile)
             {
-                Debug.Log("Agile no Marker!!??");
-                GameObject marker = Instantiate(Resources.Load("Prefabs/Marker", typeof (GameObject)), Vector3.zero, Quaternion.identity) as GameObject;
+                GameObject marker = Instantiate(Resources.Load("Prefabs/Marker", typeof (GameObject)), transform.position, Quaternion.identity) as GameObject;
                 marker.GetComponent<MarkerScript>().assign(gameObject, false);
             }
             else
@@ -242,10 +324,15 @@ public class UnitScript : MonoComponents
                 checkSpeed();
                 transform.position += transform.up * speed;    
             }
-            
+            if (mineParticles!=null) mineParticles.Stop();
         }
         else
         {
+            if (miner && mineParticles != null) //ugly fixing once again
+            {
+                if (targetScriptList[0].parentScript == null) mineParticles.Stop();
+                if (Vector3.Distance(targetScriptList[0].positions[gameObject].getTargetPosition(), gameObject.GetComponent<Transform>().position) > 3.0f) mineParticles.Stop();
+            }
             if ((targetScriptList[0].positions[gameObject].follow ||
                  targetScriptList[0].positions[gameObject].isCircular) &&
                 (targetScriptList[0].positions[gameObject].markerPos == null))
@@ -271,17 +358,22 @@ public class UnitScript : MonoComponents
                         if (targetScriptList[0].positions[gameObject].isCircular)
                         {
                             Orbit(targetScriptList[0].positions[gameObject].generateNewTargetPosition() /*+ targetScriptList[0].getOffset()*/);
-                            if (miner) checkMine();
+                            if (miner)
+                            {
+                                checkMine();
+                            }
                             if (unitType == UnitType.vector) startTerraforming(targetScriptList[0].parentScript.gameObject);
                         }
                         else
                         {
+                            if (mineParticles != null) mineParticles.Stop();
                             Move(targetScriptList[0].positions[gameObject].generateNewTargetPosition(),
                                 targetScriptList[0].positions[gameObject].getTurnSpeedModifier(transform.position));
                         }
                     }
                     else
                     {
+                        if (mineParticles != null) mineParticles.Stop();
                         if (!targetScriptList[0].positions[gameObject].follow)
                         {
                             targetScriptList[0].unassign(gameObject);
@@ -411,18 +503,18 @@ public class UnitScript : MonoComponents
     {
         if (playerScript == null)
         {
-            Debug.Log("slecting what you should not");
+            Debug.Log("selecting what you should not");
             return;
         }
         playerScript.selected.Add(gameObject);
-        renderer.color = Color.red;
+        //renderer.color = Color.red;
     }
 
     public void unselect()
     {
         if (playerScript == null)
         {
-            Debug.Log("slecting what you should not");
+            Debug.Log("selecting what you should not");
             return;
         }
         unselect_noremove();
@@ -440,7 +532,7 @@ public class UnitScript : MonoComponents
         //do when thinking
         //todo list forces
         if (playerScript!=null) unselect();
-        if (unitType == UnitType.vector)
+        if (unitType == UnitType.vector || unitType == UnitType.miner)
         {
             forcesScript.resSecondary--;
         }
@@ -475,11 +567,9 @@ public class UnitScript : MonoComponents
     //this is ugly (crosscall), todo rewrite
     public void sendHome(GameObject miner)
     {
-        Debug.Log("home?");
         MarkerScript home = (miner.GetComponent<UnitScript>().forcesScript.asteroidMarkers.ContainsKey(gameObject)) ? miner.GetComponent<UnitScript>().forcesScript.asteroidMarkers[gameObject] : null;
         if (home != null)
         {
-            Debug.Log("send home");
             home.assign(miner, false);
         }
         else
@@ -515,11 +605,10 @@ public class UnitScript : MonoComponents
             }
             
         }
-        else if ((targetScriptList[0].parentScript.owner == owner) && (!targetScriptList[0].parentScript.isLocked && targetScriptList[0].parentScript.unitType==UnitType.basePlanet))
+        else if ((targetScriptList[0].parentScript.owner == owner) && !(targetScriptList[0].parentScript.isLocked && targetScriptList[0].parentScript.unitType==UnitType.basePlanet))
         {
             if (currentLoad > 0)
             {
-                //dropoff todo particle effect
                 if (!mineParticles.isPlaying) mineParticles.Play();
                 currentLoad -= gatherSpeed*Time.deltaTime;
                 forcesScript.resPrimary += gatherSpeed*Time.deltaTime;
@@ -528,7 +617,7 @@ public class UnitScript : MonoComponents
             {
                 mineParticles.Stop();
                 currentLoad = 0;
-                if (lastMined!=null) lastMined.assign(gameObject,false);
+                if (lastMined!=null) lastMined.assignFront(gameObject); //if not workign change to assign(gameObject,false)
             }
         }
         
@@ -582,7 +671,7 @@ public class UnitScript : MonoComponents
                 if (isStructure)
                 {
                     //todo change sprite - building complete
-                    GetComponent<SpriteRenderer>().sprite = Resources.Load("Sprites/Placehold/planets_01", typeof(Sprite)) as Sprite;
+                    //GetComponent<SpriteRenderer>().sprite = Resources.Load("Sprites/Placehold/planets_01", typeof(Sprite)) as Sprite;
                     isLocked = false;
                     switch (unitType)
                     {
@@ -636,6 +725,7 @@ public class UnitScript : MonoComponents
         switch (buildingType)
         {
             case UnitType.basePlanet:
+                if (textStatus != null) textStatus.transform.FindChild("Text").GetComponent<Text>().text = "Terraformed Planet";
                 transformCoef = 0.0f;
                 qText = "";
                 wText = "";
@@ -643,6 +733,7 @@ public class UnitScript : MonoComponents
                 rText = "";
                 break;
             case UnitType.fighterPlanet:
+                if (textStatus != null) textStatus.transform.FindChild("Text").GetComponent<Text>().text = "War-Factory";
                 transformCoef = 5.0f;
                 qText = "";
                 wText = "";
@@ -650,6 +741,7 @@ public class UnitScript : MonoComponents
                 rText = "";
                 break;
             case UnitType.artilleryPlanet:
+                if (textStatus != null) textStatus.transform.FindChild("Text").GetComponent<Text>().text = "Heavy-Factory";
                 transformCoef = 5.0f;
                 qText = "";
                 wText = "";
@@ -657,6 +749,7 @@ public class UnitScript : MonoComponents
                 rText = "";
                 break;
             case UnitType.capitalPlanet:
+                if (textStatus != null) textStatus.transform.FindChild("Text").GetComponent<Text>().text = "Capital Planet";
                 transformCoef = 5.0f;
                 qText = "";
                 wText = "";
@@ -672,6 +765,7 @@ public class UnitScript : MonoComponents
         if (planetScript.owner < 0 && planetScript.unitType==UnitType.planet)
         {
             planetScript.setOwner(owner);
+            forcesScript.structures.Add(planet);
             planetScript.startBuildingPlanet(UnitType.basePlanet);
         }
         if (planetScript.unitType == UnitType.basePlanet && planetScript.owner == owner && planetScript.isLocked)
@@ -682,7 +776,6 @@ public class UnitScript : MonoComponents
             GetComponent<SpriteRenderer>().sprite = Resources.Load("Sprites/Misc/transparency_hack", typeof(Sprite)) as Sprite;
             primaryThrust.Stop();
             transformParticles.Play();
-            mineParticles.Play();
         }
     }
 
@@ -715,6 +808,7 @@ public class UnitScript : MonoComponents
             case UnitType.vector:
                 isTransforming = true;
                 unitType = UnitType.miner;
+                canAttack = false;
                 miner = true;
                 GetComponent<SpriteRenderer>().sprite = Resources.Load("Sprites/Misc/transparency_hack", typeof(Sprite)) as Sprite;
                 primaryThrust.Stop();
@@ -800,5 +894,10 @@ public class UnitScript : MonoComponents
             }
         }
         else forcesScript = null;
+    }
+
+    void OnGUI()
+    {
+        
     }
 }
