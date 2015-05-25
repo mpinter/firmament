@@ -195,7 +195,7 @@ public class UnitScript : MonoComponents
     {
         checkTask();
         if (productionQueue != null) updateQueue();
-        if (hp<=0) Destroy(gameObject);
+        if ((hp<=0)&&(!isStructure)) Destroy(gameObject);
     }
 
 	void FixedUpdate () {
@@ -403,7 +403,8 @@ public class UnitScript : MonoComponents
     public void checkLife()
     {
         //todo add fancy explosion, ondestroy event
-        if (hp<=0) Destroy(gameObject);
+        if ((hp<=0)&&(!isStructure)) Destroy(gameObject);
+        if (hp < 0) hp = 0;
     }
 
     public void select()
@@ -431,6 +432,7 @@ public class UnitScript : MonoComponents
     public void unselect_noremove()
     {
         renderer.color = Color.white;
+        //playerScript.selectedDraw.Remove(gameObject);
     }
 
     public void OnDestroy()
@@ -522,7 +524,7 @@ public class UnitScript : MonoComponents
                 currentLoad -= gatherSpeed*Time.deltaTime;
                 forcesScript.resPrimary += gatherSpeed*Time.deltaTime;
             }
-            else
+            else if (!(isLocked||isTransforming))
             {
                 mineParticles.Stop();
                 currentLoad = 0;
@@ -540,8 +542,18 @@ public class UnitScript : MonoComponents
             {
                 //a bit unsafe, but if it crashes here at least I should know what is wrong
                 //todo finetune parameters
+                if (targetScriptList.Count == 0)
+                {
+                    Destroy(gameObject);
+                    return;
+                }
                 if (targetScriptList[0] != null)
                 {
+                    if (targetScriptList[0].parentScript == null)
+                    {
+                        Destroy(gameObject);
+                        return;
+                    }
                     transformCoef = (101 - targetScriptList[0].parentScript.transformTimer)/100.0f;
                     if (targetScriptList[0].parentScript.isLocked)
                     {

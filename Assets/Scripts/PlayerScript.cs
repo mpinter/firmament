@@ -9,6 +9,7 @@ public class PlayerScript : ForcesScript {
 
     public HashSet<GameObject> selected=new HashSet<GameObject>();
     private bool selectHit = false; //check if unit was succesfully clicked this frame
+    public Dictionary<GameObject,GameObject> selectedDraw = new Dictionary<GameObject, GameObject>(); 
 
     //todo null && switch actions
     public bool performingAction = false;
@@ -36,7 +37,58 @@ public class PlayerScript : ForcesScript {
                     unit.GetComponent<UnitScript>().Cancel();
             }
         }
+        DrawLines();
 	}
+
+    void DrawLines()
+    {
+        foreach (var unit in selected)
+        {
+            if (unit.GetComponent<UnitScript>().isMineable)
+            {
+                //draw all miners
+                Gizmos.color = Color.yellow;
+                foreach (var asteroidMarker in asteroidMarkers)
+                {
+                    if (!selectedDraw.ContainsKey(asteroidMarker.Key))
+                        selectedDraw[asteroidMarker.Key]=(Instantiate(Resources.Load("Prefabs/Line", typeof (GameObject)) as GameObject));
+                    selectedDraw[asteroidMarker.Key].GetComponent<LineRenderer>().SetPosition(0, asteroidMarker.Key.transform.position);
+                    selectedDraw[asteroidMarker.Key].GetComponent<LineRenderer>().SetPosition(1, asteroidMarker.Value.transform.position);
+                    selectedDraw[asteroidMarker.Key].GetComponent<LineRenderer>().SetColors(Color.yellow, Color.yellow);
+                }
+            }
+            if (!unit.GetComponent<UnitScript>().isStructure)
+            {
+                foreach (var target in unit.GetComponent<UnitScript>().targetScriptList)
+                {
+                    if (!target.positions.ContainsKey(unit)) continue; //in case errors should happen, silently ignore
+                    Color color;
+                    if (target.positions[unit].attack)
+                    {
+                        color = Color.red;
+                    }
+                    else
+                    {
+                        color = Color.white;
+                    }
+                    if (!selectedDraw.ContainsKey(unit))
+                        selectedDraw[unit] = (Instantiate(Resources.Load("Prefabs/Line", typeof(GameObject)) as GameObject));
+                    selectedDraw[unit].GetComponent<LineRenderer>().SetPosition(0, target.transform.position);
+                    selectedDraw[unit].GetComponent<LineRenderer>().SetPosition(1, unit.transform.position);
+                    selectedDraw[unit].GetComponent<LineRenderer>().SetColors(color,color);
+                }
+            }
+        }
+        //since this is relatively cheap enough and requires less thinking than removing only the required ones
+        foreach (var unit in selectedDraw.Keys)
+        {
+            if (!selected.Contains(unit))
+            {
+                Destroy(selectedDraw[unit]);
+                selectedDraw.Remove(unit);
+            }
+        }
+    }
 
     void OnGUI()
     {
@@ -100,7 +152,6 @@ public class PlayerScript : ForcesScript {
         //todo pretify
         if (Input.GetMouseButtonUp(0) && (CameraScript.downTime < 0.1f) && !selectHit)
         {
-            //todo
             if (performingAction)
             {
                 GameObject marker = (GameObject)Instantiate(Resources.Load("Prefabs/Marker", typeof(GameObject)));
@@ -109,7 +160,7 @@ public class PlayerScript : ForcesScript {
                 setTarget(marker.GetComponent<MarkerScript>(), additive);
                 foreach (var unit in selected)
                 {
-
+                    if (!marker.GetComponent<MarkerScript>().positions.ContainsKey(unit)) continue; //some may have been skipped (locked/transforming/not mine)
                     marker.GetComponent<MarkerScript>().positions[unit].attack = true;
                 }
                 performingAction = false;
@@ -183,12 +234,11 @@ public class PlayerScript : ForcesScript {
                     if (target.parentScript != null && target.parentScript.owner != id) target.positions[unit.gameObject].attack = true;    
                 }
             }
-            else if (unit.GetComponent<UnitScript>().isMineable && target.parentScript.owner == id &&
+            else if (unit.GetComponent<UnitScript>().isMineable && target.parentScript!=null && target.parentScript.owner == id &&
                      target.parentScript.isStructure)
             {
                 //todo remove dead markers
                 asteroidMarkers[unit] = target;
-
             }
         }
     }

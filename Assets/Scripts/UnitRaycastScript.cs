@@ -29,12 +29,12 @@ public class UnitRaycastScript : MonoComponents
 	        case UnitScript.UnitType.vector:
                 ranges.Add(new KeyValuePair<float, float>(0.0f,0.0f));
                 currentCd.Add(5.0f);
-                guns.Add("Prefabs/Laserz");
+                guns.Add("Prefabs/Phaserz");
 	            break;
             case UnitScript.UnitType.artillery:
                 ranges.Add(new KeyValuePair<float, float>(0.0f, 0.0f));
                 currentCd.Add(15.0f);
-                guns.Add("Prefabs/Missile");
+                guns.Add("Prefabs/Laserz");
                 break;
             case UnitScript.UnitType.fighter:
                 ranges.Add(new KeyValuePair<float, float>(15.0f, 65.0f));
@@ -55,6 +55,32 @@ public class UnitRaycastScript : MonoComponents
                 currentCd.Add(0.0f);
                 guns.Add("Prefabs/Laserz");
 	            break;
+            case UnitScript.UnitType.capital:
+	            for (int i = 0; i < 8; i++)
+	            {
+	                if (i%2 == 0)
+	                {
+	                    ranges.Add(new KeyValuePair<float, float>(0.0f, 110.0f));
+	                }
+	                else
+	                {
+                        ranges.Add(new KeyValuePair<float, float>(290.0f, 360.0f));
+	                }
+	                currentCd.Add(weaponCd);
+	                switch (Random.Range(0,2))
+	                {
+                        case 0:
+                            guns.Add("Prefabs/HugeMissile");
+	                        break;
+                        case 1:
+                            guns.Add("Prefabs/Phaserz");
+	                        break;
+                        case 2:
+                            guns.Add("Prefabs/Laserz");
+	                        break;
+	                }   
+	            }
+                break;
 	    }
 	}
 	
@@ -112,17 +138,19 @@ public class UnitRaycastScript : MonoComponents
 	                    {
 	                        //Debug.Log("ATTACK!");
 	                        //Debug.Log(attackHit.distance);
-	                        if (unitScript.targetScriptList.Count > 0 &&
+
+
+                            if ((unitScript.unitType!=UnitScript.UnitType.vector) || (unitScript.targetScriptList.Count > 0 &&
 	                            (unitScript.targetScriptList[0].parentScript ==
 	                             attackHit.collider.GetComponent<UnitScript>() ||
-	                             !unitScript.targetScriptList[0].positions[gameObject].attack))
+	                             !unitScript.targetScriptList[0].positions[gameObject].attack)))
 	                        {
 	                            //Debug.Log("already attacking");
-	                            shootAt(attackHit.collider.gameObject, range);
+                                shootAt(attackHit.collider.gameObject, range);
 	                            //Debug.Log(unitScript.targetScriptList[0].positions[gameObject].attack);
 
 	                        }
-	                        else if ((unitScript.targetScriptList.Count == 0) ||
+	                        if ((unitScript.targetScriptList.Count == 0) ||
 	                                 (unitScript.targetScriptList[0].positions[gameObject].attack &&
 	                                  !unitScript.targetScriptList[0].positions[gameObject].follow &&
 	                                  !unitScript.targetScriptList[0].positions[gameObject].isCircular))
@@ -136,7 +164,7 @@ public class UnitRaycastScript : MonoComponents
 	                        else
 	                        {
 	                            //Debug.Log("Could shoot, but why bother?");
-	                            currentCd[range] += Random.Range(0.0f, 0.5f);
+	                            //currentCd[range] += Random.Range(0.0f, 0.5f);
 	                        }
 	                        if (unitScript.targetScriptList.Count > 0 &&
 	                            !unitScript.targetScriptList[0].positions[gameObject].attack)

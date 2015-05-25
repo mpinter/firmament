@@ -169,6 +169,7 @@ public class MarkerScript : MonoComponents {
     void LateUpdate()
     {
         previousPos = transform.position;
+        if (hasParent && parentScript == null) Remove(); //to be sure, in update this can sometimes be screwed by execution order
     }
 
     void Awake()
