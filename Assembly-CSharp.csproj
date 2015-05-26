@@ -52,9 +52,11 @@
      <Compile Include="Assets\Scripts\CameraZoomScript.cs" />
      <Compile Include="Assets\Scripts\FixRotationScript.cs" />
      <Compile Include="Assets\Scripts\ForcesScript.cs" />
+     <Compile Include="Assets\Scripts\IntroFadeScript.cs" />
      <Compile Include="Assets\Scripts\LaserScript.cs" />
      <Compile Include="Assets\Scripts\MarkerScript.cs" />
      <Compile Include="Assets\Scripts\MasterScript.cs" />
+     <Compile Include="Assets\Scripts\MenuScript.cs" />
      <Compile Include="Assets\Scripts\MissileScript.cs" />
      <Compile Include="Assets\Scripts\MonoComponents.cs" />
      <Compile Include="Assets\Scripts\PlayerScript.cs" />

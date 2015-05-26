@@ -81,6 +81,7 @@ public class UnitScript : MonoComponents
         public string prefabPath;
         public int quantity;
         public int limit = 0;
+        public int owner;
         public float remainingTime;
         public float resetTime;
         public float spawnRadius;
@@ -88,7 +89,7 @@ public class UnitScript : MonoComponents
         public bool endless = false;
         public bool active = false;
 
-        public ProductionItem(string _prefabPath,int _quantity,float _resetTime, float _spawnRadius, float _cost, bool _endless)
+        public ProductionItem(string _prefabPath,int _quantity,float _resetTime, float _spawnRadius, float _cost, bool _endless, int _owner=0)
         {
             prefabPath = _prefabPath;
             quantity = _quantity;
@@ -97,6 +98,7 @@ public class UnitScript : MonoComponents
             cost = _cost;
             endless = _endless;
             remainingTime = resetTime;
+            owner = _owner;
         }
 
         public void Update(MarkerScript ms,Transform t)
@@ -115,6 +117,7 @@ public class UnitScript : MonoComponents
             {
                 GameObject latest = Instantiate(Resources.Load(prefabPath, typeof(GameObject))) as GameObject;
                 latest.transform.position = t.position + Vector3.Normalize(Random.insideUnitCircle) * spawnRadius;
+                latest.GetComponent<UnitScript>().owner = owner;
                 /*if (latest.GetComponent<UnitScript>().unitType == UnitType.vector)
                 {
                     Debug.Log("is vector, force ?");
@@ -165,13 +168,13 @@ public class UnitScript : MonoComponents
             marker = Instantiate(Resources.Load("Prefabs/Marker", typeof(GameObject)),transform.position,Quaternion.identity) as GameObject;
             marker.GetComponent<MarkerScript>().assign(gameObject,false);
 	    }
-	    if ((unitType == UnitType.blackHole) &&(owner>=0))
-	    {
-	        productionQueue=new List<ProductionItem>();
-	        var prod = new ProductionItem("Prefabs/vector", 20, 1, 20, 0, true);
-	        prod.limit = 120 - playerScript.resSecondary;
+        if ((unitType == UnitType.blackHole) && (owner >= 0))
+        {
+            productionQueue = new List<ProductionItem>();
+            var prod = new ProductionItem("Prefabs/vector", 20, 1, 20, 0, true, owner);
+            prod.limit = 120 - forcesScript.resSecondary;
             productionQueue.Add(prod);
-	    }
+        }
 	    if (unitType == UnitType.vector)
 	    {
 	        forcesScript.resSecondary++;
@@ -206,8 +209,12 @@ public class UnitScript : MonoComponents
             progress.GetComponentInChildren<Image>().type = Image.Type.Filled;
         }
 	    healthMax = hp;
-	    if (owner >= 0 && !isStructure)
+	    if (owner >= 0)
 	    {
+	        if (isStructure && unitType!=UnitType.blackHole)
+	        {
+	            forcesScript.structures.Add(gameObject);
+	        }
 	        forcesScript.units.Add(gameObject);
 	    }
 	}
@@ -883,6 +890,7 @@ public class UnitScript : MonoComponents
         }
         else if (ownerId > 0)
         {
+            if (owner > 0) renderer.color = Color.red;
             gameObject.layer = ownerId + 16;
             for (int i = 0; i < 8; i++)
             {
