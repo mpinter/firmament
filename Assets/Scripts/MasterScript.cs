@@ -6,6 +6,9 @@ public class MasterScript : MonoBehaviour
 {
     public List<ForcesScript> forces=new List<ForcesScript>();
 
+    public GameObject friendlyHole;
+    public GameObject hostileHole;
+
 	void Start ()
 	{
 	    forces.Add(GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerScript>());
@@ -16,7 +19,11 @@ public class MasterScript : MonoBehaviour
 	}
 	
 	void Update () {
-	
+        if (hostileHole.GetComponent<UnitScript>().hp<0.0f) Camera.main.gameObject.GetComponent<CameraZoomScript>().Accomplished();
+	    if (Input.GetKeyDown(KeyCode.X))
+	    {
+	        Application.Quit();
+	    }
 	}
 
     void LateUpdate()

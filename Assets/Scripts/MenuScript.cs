@@ -12,6 +12,6 @@ public class MenuScript : MonoBehaviour {
 
     public void Click()
     {
-        Application.LoadLevel("test");
+        Application.LoadLevel("level");
     }
 }

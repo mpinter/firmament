@@ -137,22 +137,15 @@ public class UnitRaycastScript : MonoComponents
 	                        (Quaternion.Euler(0, 0, Random.Range(ranges[range].Key, ranges[range].Value))*transform.up),
 	                        attackRange,
 	                        unitScript.enemiesLayerMask);
-                        //Debug.Log("tryattack");
 	                    if (attackHit.collider != null &&
 	                        !(attackHit.collider.gameObject.GetComponent<UnitScript>().isStructure && unitScript.agile))
 	                    {
-	                        //Debug.Log("ATTACK!");
-	                        //Debug.Log(attackHit.distance);
-
-
                             if ((unitScript.unitType!=UnitScript.UnitType.vector) || (unitScript.targetScriptList.Count > 0 &&
 	                            (unitScript.targetScriptList[0].parentScript ==
 	                             attackHit.collider.GetComponent<UnitScript>() ||
 	                             !unitScript.targetScriptList[0].positions[gameObject].attack)))
 	                        {
-	                            //Debug.Log("already attacking");
                                 shootAt(attackHit.collider.gameObject, range);
-	                            //Debug.Log(unitScript.targetScriptList[0].positions[gameObject].attack);
 
 	                        }
 	                        if ((unitScript.targetScriptList.Count == 0) ||
@@ -161,7 +154,6 @@ public class UnitRaycastScript : MonoComponents
 	                                  !unitScript.targetScriptList[0].positions[gameObject].isCircular))
 	                        {
 	                            //add marker beginning
-	                            Debug.Log("ADD MARKER"); //todo attack move and check this
 	                            attackHit.collider.GetComponent<UnitScript>().markerScript.assignFront(gameObject);
 	                            unitScript.targetScriptList[0].positions[gameObject].attack = true;
 	                            shootAt(attackHit.collider.gameObject, range);
@@ -177,6 +169,8 @@ public class UnitRaycastScript : MonoComponents
 	                            //casually shoot at things I encounter
 	                            //covered in first if, this just for debug
 	                            //Debug.Log("Casual scrub");
+
+                                //this is legacy since the change of lock-on system, but kept in case it was needed
 	                        }
 
 	                    }
@@ -198,7 +192,6 @@ public class UnitRaycastScript : MonoComponents
 	                            unitScript.enemiesLayerMask);
 	                        if (aggroHit.collider != null)
 	                        {
-	                            Debug.Log("AGGRO!");
 	                            aggroHit.collider.GetComponent<UnitScript>().markerScript.assignFront(gameObject);
 	                            unitScript.targetScriptList[0].positions[gameObject].attack = true;
 	                        }
@@ -215,10 +208,6 @@ public class UnitRaycastScript : MonoComponents
 
     void shootAt(GameObject target,int gunId)
     {
-        //instantiate shot
-        //give it target
-        //shot script - on destroy reduce hp
-        //Debug.Log(target);
         GameObject missile = Instantiate(Resources.Load(guns[gunId], typeof (GameObject))) as GameObject;
         missile.transform.position = gameObject.transform.position;
         if (missile.GetComponent<MissileScript>().laser) missile.transform.parent = gameObject.transform;

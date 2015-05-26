@@ -25,7 +25,6 @@ public class PlayerScript : ForcesScript {
 	    if (Input.GetKey(KeyCode.A))
 	    {
 	        performingAction = true;
-            Debug.Log("action");
 	    }
         if (Input.GetKeyDown(KeyCode.Q))
         {
@@ -175,7 +174,7 @@ public class PlayerScript : ForcesScript {
             if (performingAction)
             {
                 GameObject marker = (GameObject)Instantiate(Resources.Load("Prefabs/Marker", typeof(GameObject)));
-                if (x > 0 && y > 0)
+                if (x > 0 && y > 0 && Camera.main.gameObject.GetComponent<CameraZoomScript>().minimapActive)
                 {
                     marker.GetComponent<Transform>().position = minimapCamera.GetComponent<Camera>().ScreenToWorldPoint(new Vector3(x, y));
                 }
@@ -192,7 +191,7 @@ public class PlayerScript : ForcesScript {
                 }
                 performingAction = false;
             }
-            else if (!((Input.mousePosition.x < 300 && Input.mousePosition.y < 55) || (x > 0 && y > 0)))
+            else if (!((Input.mousePosition.x < 300 && Input.mousePosition.y < 55) || (x > 0 && y > 0 && Camera.main.gameObject.GetComponent<CameraZoomScript>().minimapActive)))
             {
                 foreach (var unit in selected)
                 {
@@ -208,7 +207,7 @@ public class PlayerScript : ForcesScript {
             GameObject marker = (GameObject)Instantiate(Resources.Load("Prefabs/Marker", typeof(GameObject)));
             float x = Input.mousePosition.x - (Screen.width - 400);
             float y = Input.mousePosition.y - (Screen.height - 258);
-            if (x > 0 && y > 0)
+            if (x > 0 && y > 0 && Camera.main.gameObject.GetComponent<CameraZoomScript>().minimapActive)
             {
                 marker.GetComponent<Transform>().position = minimapCamera.GetComponent<Camera>().ScreenToWorldPoint(new Vector3(x, y));
             }
@@ -246,7 +245,6 @@ public class PlayerScript : ForcesScript {
         if (obj == null) return;
          if (obj.tag == "Selectable")
          {
-            Debug.Log("Right click");
             bool additive = Input.GetKey(KeyCode.LeftShift);
             setTarget(obj.GetComponent<UnitScript>().markerScript,additive);
             selectHit = true;
@@ -281,7 +279,6 @@ public class PlayerScript : ForcesScript {
 
     public void unselectAll()
     {
-        Debug.Log("unselect all");
         foreach (var unit in selected)
         {
             unit.GetComponent<UnitScript>().unselect_noremove();

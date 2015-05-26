@@ -118,12 +118,6 @@ public class UnitScript : MonoComponents
                 GameObject latest = Instantiate(Resources.Load(prefabPath, typeof(GameObject))) as GameObject;
                 latest.transform.position = t.position + Vector3.Normalize(Random.insideUnitCircle) * spawnRadius;
                 latest.GetComponent<UnitScript>().owner = owner;
-                /*if (latest.GetComponent<UnitScript>().unitType == UnitType.vector)
-                {
-                    Debug.Log("is vector, force ?");
-                    latest.GetComponent<UnitScript>().centerMarker = ms.gameObject;
-                    //ms.forcePosition(latest.gameObject, latest.gameObject, latest.GetComponent<UnitScript>(), t);
-                }*/
             }
             if (endless)
             {
@@ -171,7 +165,7 @@ public class UnitScript : MonoComponents
         if ((unitType == UnitType.blackHole) && (owner >= 0))
         {
             productionQueue = new List<ProductionItem>();
-            var prod = new ProductionItem("Prefabs/vector", 20, 1, 20, 0, true, owner);
+            var prod = new ProductionItem("Prefabs/vector", 20, 20, 20, 0, true, owner);
             prod.limit = 120 - forcesScript.resSecondary;
             productionQueue.Add(prod);
         }
@@ -245,7 +239,6 @@ public class UnitScript : MonoComponents
            // if (unitType == UnitType.blackHole) progress.transform.position = transform.TransformPoint(transform.position);
             if (playerScript.selected.Contains(gameObject) && isMineable)
             {
-                Debug.Log("mineable fill");
                 progress.GetComponentInChildren<Image>().enabled = true;
                 progress.GetComponentInChildren<Image>().fillAmount = minerals/5000.0f;
             }
@@ -532,7 +525,6 @@ public class UnitScript : MonoComponents
     {
         if (playerScript == null)
         {
-            Debug.Log("selecting what you should not");
             return;
         }
         playerScript.selected.Add(gameObject);
@@ -543,7 +535,6 @@ public class UnitScript : MonoComponents
     {
         if (playerScript == null)
         {
-            Debug.Log("selecting what you should not");
             return;
         }
         unselect_noremove();
@@ -574,7 +565,6 @@ public class UnitScript : MonoComponents
 
     public float Gather()
     {
-        if (!isMineable) Debug.Log("What are you trying to mine really ?!?");
         minerals -= gatherSpeed*Time.deltaTime;
         if (minerals < 0)
         {
@@ -620,7 +610,6 @@ public class UnitScript : MonoComponents
             }
             else
             {
-                Debug.Log("sending home");
                 mineParticles.Stop();
                 currentLoad = maxLoad;
                 lastMined = targetScriptList[0];

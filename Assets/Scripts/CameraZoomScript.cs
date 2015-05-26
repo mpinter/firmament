@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public class CameraZoomScript : MonoBehaviour {
 
@@ -20,10 +21,34 @@ public class CameraZoomScript : MonoBehaviour {
     public bool minimapActive=true;
 
     public GameObject minimapCamera;
+    public GameObject blackCover;
+    public GameObject textBig;
+    public GameObject textSmall;
+    public GameObject minimapBackground;
+    public GameObject minimapForeground;
 
-	void Start () {
+	void Start ()
+	{
+	    Camera.main.orthographicSize = 50;
         targetOrtho = Camera.main.orthographicSize;
+        Camera.main.transform.position=new Vector3(85,35,-10);
+        blackCover.GetComponentInChildren<Image>().CrossFadeAlpha(0.0f, 5.0f, false);
+	    textSmall.GetComponentInChildren<Text>().enabled = false;
+        textBig.GetComponentInChildren<Text>().CrossFadeAlpha(0.0f, 5.0f, false);
+	    minimapActive = false;
+        minimapBackground.GetComponentInChildren<Image>().CrossFadeAlpha(0.0f, 0.0f, false);
+        minimapForeground.GetComponentInChildren<RawImage>().CrossFadeAlpha(0.0f, 0.0f, false);
 	}
+
+    public void Accomplished()
+    {
+        blackCover.GetComponentInChildren<Image>().CrossFadeAlpha(1.0f, 5.0f, false);
+        textSmall.GetComponentInChildren<Text>().enabled = true;
+        textSmall.GetComponentInChildren<Text>().CrossFadeAlpha(1.0f, 5.0f, false);
+        textBig.GetComponentInChildren<Text>().enabled = true;
+        textBig.GetComponentInChildren<Text>().text = "Mission accomplished.";
+        textBig.GetComponentInChildren<Text>().CrossFadeAlpha(1.0f, 5.0f, false);
+    }
 
     //from stackOverflow
     public float horzExtent()
@@ -34,13 +59,23 @@ public class CameraZoomScript : MonoBehaviour {
 	void Update () {
 	    if (Input.GetKeyDown(KeyCode.M))
 	    {
-	        
+	        if (minimapActive)
+	        {
+                minimapBackground.GetComponentInChildren<Image>().CrossFadeAlpha(0.0f, 1.0f, false);
+                minimapForeground.GetComponentInChildren<RawImage>().CrossFadeAlpha(0.0f, 1.0f, false);
+	        }
+	        else
+	        {
+                minimapBackground.GetComponentInChildren<Image>().CrossFadeAlpha(1.0f, 1.0f, false);
+                minimapForeground.GetComponentInChildren<RawImage>().CrossFadeAlpha(1.0f, 1.0f, false);
+	        }
+	        minimapActive = !minimapActive;
 	    }
 	    if (Input.GetMouseButtonDown(0))
 	    {
 	        float x = Input.mousePosition.x - (Screen.width - 400);
             float y = Input.mousePosition.y - (Screen.height - 258);
-	        if (x > 0 && y > 0)
+            if (x > 0 && y > 0 && Camera.main.gameObject.GetComponent<CameraZoomScript>().minimapActive)
 	        {
 	            goToPosition(minimapCamera.GetComponent<Camera>().ScreenToWorldPoint(new Vector3(x,y)));
 	        }
@@ -107,12 +142,5 @@ public class CameraZoomScript : MonoBehaviour {
         y = (lowery < 0) ? position.y - lowery : position.y;
         y = (uppery > sceneLimitY) ? y - (uppery - sceneLimitY) : y;
         Camera.main.transform.position = new Vector3(x,y, Camera.main.transform.position.z); 
-        /*Debug.Log("===============");
-        Debug.Log(lowerx);
-        Debug.Log(upperx);
-        Debug.Log(lowery);
-        Debug.Log(uppery);
-        Debug.Log(x);
-        Debug.Log(y);*/
     }
 }

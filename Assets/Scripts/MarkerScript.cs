@@ -81,8 +81,6 @@ public class MarkerScript : MonoComponents {
             if (isCircular)
             {
                 angle += speed*Time.deltaTime;
-                //Debug.Log(angle);
-                //Debug.Log(speed);
                 return getTargetPosition();
             }
             else if (isAgile)
@@ -96,7 +94,7 @@ public class MarkerScript : MonoComponents {
             }
             else
             {
-                Debug.Log("Shouldn't really get here with current units, maybe with spores only?");
+                //Debug.Log("Shouldn't really get here with current units, maybe with spores only?");
                 pos = (follow) ? Vector2.zero : Random.insideUnitCircle;
                 pos += markerPos.position;
                 return pos;
@@ -235,6 +233,7 @@ public class MarkerScript : MonoComponents {
 
     public void unassign(GameObject obj)
     {
+        //there's null in here, but it won't break anything
         positions.Remove(obj);
         if (obj.GetComponent<UnitScript>().capital)
         {
