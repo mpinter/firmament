@@ -251,3 +251,9 @@ Cmd: compileSnippet
   api=4 type=0 insize=1079 outsize=990 kw= ok=1
 Cmd: compileSnippet
   api=4 type=1 insize=1079 outsize=1510 kw= ok=1
+Unhandled exception: Readfile from pipe failed. GLE=Přesměrování bylo ukončeno.
+
+
+Quitting shader compiler process
+
+Crashed!

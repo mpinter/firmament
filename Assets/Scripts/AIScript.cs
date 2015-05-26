@@ -28,6 +28,7 @@ public class AIScript : ForcesScript
 	            marker.GetComponent<Transform>().position = player.GetComponent<PlayerScript>().structures.ElementAt(Random.Range(0,player.GetComponent<PlayerScript>().structures.Count)).transform.position;
 	            foreach (var unit in units)
 	            {
+	                if (unit.GetComponent<UnitScript>().isStructure) continue; 
 	                if (Random.Range(0.0f, 1.0f) > 0.8f)
 	                {
 	                    marker.GetComponent<MarkerScript>().assign(unit,false);

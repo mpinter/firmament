@@ -371,7 +371,7 @@ public class UnitScript : MonoComponents
                 Vector3.Distance(targetScriptList[0].positions[gameObject].getTargetPosition(),
                     gameObject.GetComponent<Transform>().position) < 1.0f)
             {
-                if (targetScriptList.Count > 1 && !miner) //miners need to rally up and down
+                if (targetScriptList.Count > 1 && !(miner && currentLoad<maxLoad)) //miners need to rally up and down
                 {
                     targetScriptList[0].unassign(gameObject);
                     checkMove();
