@@ -10,6 +10,7 @@ public class PlayerScript : ForcesScript {
     public HashSet<GameObject> selected=new HashSet<GameObject>();
     private bool selectHit = false; //check if unit was succesfully clicked this frame
     public Dictionary<GameObject,GameObject> selectedDraw = new Dictionary<GameObject, GameObject>();
+    public GameObject minimapCamera;
     //public Dictionary<GameObject, GameObject> shownMarkers = new Dictionary<GameObject, GameObject>();
 
     //todo null && switch actions
@@ -169,10 +170,19 @@ public class PlayerScript : ForcesScript {
         //todo pretify
         if (Input.GetMouseButtonUp(0) && (CameraScript.downTime < 0.1f) && !selectHit)
         {
+            float x = Input.mousePosition.x - (Screen.width - 400);
+            float y = Input.mousePosition.y - (Screen.height - 258);
             if (performingAction)
             {
                 GameObject marker = (GameObject)Instantiate(Resources.Load("Prefabs/Marker", typeof(GameObject)));
-                marker.GetComponent<Transform>().position = Camera.main.ScreenToWorldPoint(CameraScript.lastClickPos);
+                if (x > 0 && y > 0)
+                {
+                    marker.GetComponent<Transform>().position = minimapCamera.GetComponent<Camera>().ScreenToWorldPoint(new Vector3(x, y));
+                }
+                else
+                {
+                    marker.GetComponent<Transform>().position = Camera.main.ScreenToWorldPoint(CameraScript.lastClickPos);
+                }     
                 bool additive = Input.GetKey(KeyCode.LeftShift);
                 setTarget(marker.GetComponent<MarkerScript>(), additive);
                 foreach (var unit in selected)
@@ -182,7 +192,7 @@ public class PlayerScript : ForcesScript {
                 }
                 performingAction = false;
             }
-            else if (!(Input.mousePosition.x < 300 && Input.mousePosition.y < 55))
+            else if (!((Input.mousePosition.x < 300 && Input.mousePosition.y < 55) || (x > 0 && y > 0)))
             {
                 foreach (var unit in selected)
                 {
@@ -196,7 +206,16 @@ public class PlayerScript : ForcesScript {
             
             //todo markers display only if their linked units are selected - check this on slection change - gethashcode
             GameObject marker = (GameObject)Instantiate(Resources.Load("Prefabs/Marker", typeof(GameObject)));
-            marker.GetComponent<Transform>().position = Camera.main.ScreenToWorldPoint(CameraScript.lastClickPos);
+            float x = Input.mousePosition.x - (Screen.width - 400);
+            float y = Input.mousePosition.y - (Screen.height - 258);
+            if (x > 0 && y > 0)
+            {
+                marker.GetComponent<Transform>().position = minimapCamera.GetComponent<Camera>().ScreenToWorldPoint(new Vector3(x, y));
+            }
+            else
+            {
+                marker.GetComponent<Transform>().position = Camera.main.ScreenToWorldPoint(CameraScript.lastClickPos);    
+            }
             bool additive = (Input.GetKey(KeyCode.LeftShift)) ? true : false;
             setTarget(marker.GetComponent<MarkerScript>(),additive);
         }

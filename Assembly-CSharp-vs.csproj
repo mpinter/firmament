@@ -57,6 +57,7 @@
      <Compile Include="Assets\Scripts\MarkerScript.cs" />
      <Compile Include="Assets\Scripts\MasterScript.cs" />
      <Compile Include="Assets\Scripts\MenuScript.cs" />
+     <Compile Include="Assets\Scripts\MinimapClick.cs" />
      <Compile Include="Assets\Scripts\MissileScript.cs" />
      <Compile Include="Assets\Scripts\MonoComponents.cs" />
      <Compile Include="Assets\Scripts\PlayerScript.cs" />

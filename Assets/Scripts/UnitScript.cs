@@ -217,6 +217,7 @@ public class UnitScript : MonoComponents
 	        }
 	        forcesScript.units.Add(gameObject);
 	    }
+        if (unitType == UnitType.artillery || unitType == UnitType.capital) transform.RotateAround(transform.position, transform.forward, Random.Range(0.0f,360f));
 	}
 
     void Update()
@@ -244,8 +245,25 @@ public class UnitScript : MonoComponents
            // if (unitType == UnitType.blackHole) progress.transform.position = transform.TransformPoint(transform.position);
             if (playerScript.selected.Contains(gameObject) && isMineable)
             {
+                Debug.Log("mineable fill");
                 progress.GetComponentInChildren<Image>().enabled = true;
                 progress.GetComponentInChildren<Image>().fillAmount = minerals/5000.0f;
+            }
+            else if (unitType == UnitType.vector)
+            {
+                progress.GetComponentInChildren<Image>().enabled = false;
+            }
+            else if (unitType == UnitType.miner)
+            {
+                if (transformTimer > 0)
+                {
+                    progress.GetComponentInChildren<Image>().enabled = true;
+                    progress.GetComponentInChildren<Image>().fillAmount = (100 - transformTimer) / 100.0f;
+                }
+                else
+                {
+                    progress.GetComponentInChildren<Image>().enabled = false;
+                }
             }
             else if ((playerScript.selected.Contains(gameObject) || unitType == UnitType.blackHole)&&(owner==0))
             {
