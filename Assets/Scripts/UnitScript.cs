@@ -165,7 +165,7 @@ public class UnitScript : MonoComponents
         if ((unitType == UnitType.blackHole) && (owner >= 0))
         {
             productionQueue = new List<ProductionItem>();
-            var prod = new ProductionItem("Prefabs/vector", 20, 20, 20, 0, true, owner);
+            var prod = new ProductionItem("Prefabs/vector", 20, 10, 20, 0, true, owner);
             prod.limit = 120 - forcesScript.resSecondary;
             productionQueue.Add(prod);
         }
@@ -363,7 +363,8 @@ public class UnitScript : MonoComponents
                  targetScriptList[0].positions[gameObject].isCircular) &&
                 (targetScriptList[0].positions[gameObject].markerPos == null))
             {
-                targetScriptList[0].unassign(gameObject);
+                if (targetScriptList[0]!=null) targetScriptList[0].unassign(gameObject);
+                    else targetScriptList.RemoveAt(0);
                 checkMove();
                 return;
             }
@@ -547,7 +548,7 @@ public class UnitScript : MonoComponents
 
     public void unselect_noremove()
     {
-        renderer.color = Color.white;
+        //renderer.color = Color.white;
         //playerScript.selectedDraw.Remove(gameObject);
     }
 
@@ -556,6 +557,7 @@ public class UnitScript : MonoComponents
         //do when thinking
         //todo list forces
         if (playerScript!=null) unselect();
+        Debug.Log("wat");
         if (unitType == UnitType.vector || unitType == UnitType.miner)
         {
             forcesScript.resSecondary--;

@@ -239,7 +239,9 @@ public class MarkerScript : MonoComponents {
         {
             capitalCount--;
         }
+        Debug.Log("first");
         obj.GetComponent<UnitScript>().targetScriptList.Remove(this);
+        Debug.Log("sec");
         if (positions.Count==0 && parentScript==null) Destroy(gameObject);
     }
 
