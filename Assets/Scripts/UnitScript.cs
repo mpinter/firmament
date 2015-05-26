@@ -308,7 +308,11 @@ public class UnitScript : MonoComponents
 
     public void Cancel()
     {
-        if (productionQueue!=null) productionQueue.Clear();
+        if (productionQueue != null)
+        {
+            forcesScript.resPrimary += productionQueue.Count;
+            productionQueue.Clear();
+        }
         if (!targetScriptList[0].positions[gameObject].isCircular) targetScriptList.Clear();
     }
 
