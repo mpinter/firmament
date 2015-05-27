@@ -144,7 +144,8 @@ public class UnitRaycastScript : MonoComponents
 	                            (unitScript.targetScriptList[0].parentScript ==
 	                             attackHit.collider.GetComponent<UnitScript>() ||
 	                             !unitScript.targetScriptList[0].positions[gameObject].attack)))
-	                        {
+                            {
+                                if (attackHit.collider.GetComponent<UnitScript>().owner < 0) continue;
                                 shootAt(attackHit.collider.gameObject, range);
 
 	                        }
@@ -154,6 +155,7 @@ public class UnitRaycastScript : MonoComponents
 	                                  !unitScript.targetScriptList[0].positions[gameObject].isCircular))
 	                        {
 	                            //add marker beginning
+                                if (attackHit.collider.GetComponent<UnitScript>().owner < 0) continue;
 	                            attackHit.collider.GetComponent<UnitScript>().markerScript.assignFront(gameObject);
 	                            unitScript.targetScriptList[0].positions[gameObject].attack = true;
 	                            shootAt(attackHit.collider.gameObject, range);
@@ -192,6 +194,7 @@ public class UnitRaycastScript : MonoComponents
 	                            unitScript.enemiesLayerMask);
 	                        if (aggroHit.collider != null)
 	                        {
+	                            if (aggroHit.collider.GetComponent<UnitScript>().isStructure && unitScript.agile) continue;
 	                            aggroHit.collider.GetComponent<UnitScript>().markerScript.assignFront(gameObject);
 	                            unitScript.targetScriptList[0].positions[gameObject].attack = true;
 	                        }
