@@ -88,8 +88,9 @@ public class UnitScript : MonoComponents
         public float cost;
         public bool endless = false;
         public bool active = false;
+        public MarkerScript rally = null;
 
-        public ProductionItem(string _prefabPath,int _quantity,float _resetTime, float _spawnRadius, float _cost, bool _endless, int _owner=0)
+        public ProductionItem(string _prefabPath,int _quantity,float _resetTime, float _spawnRadius, float _cost, bool _endless, int _owner=0, MarkerScript _rally=null)
         {
             prefabPath = _prefabPath;
             quantity = _quantity;
@@ -99,6 +100,7 @@ public class UnitScript : MonoComponents
             endless = _endless;
             remainingTime = resetTime;
             owner = _owner;
+            rally = _rally;
         }
 
         public void Update(MarkerScript ms,Transform t)
@@ -135,7 +137,14 @@ public class UnitScript : MonoComponents
         setOwner(owner);
 	    if (owner >= 0)
 	    {
-	        //here was once stuff
+            if (isStructure && unitType != UnitType.blackHole)
+            {
+                forcesScript.structures.Add(gameObject);
+            }
+            else
+            {
+                forcesScript.units.Add(gameObject);
+            }
 	    }
 	    else
 	    {
@@ -168,6 +177,11 @@ public class UnitScript : MonoComponents
             var prod = new ProductionItem("Prefabs/vector", 20, 10, 20, 0, true, owner);
             prod.limit = 120 - forcesScript.resSecondary;
             productionQueue.Add(prod);
+            hp = 100000;
+        }
+        else if (isStructure)
+        {
+            hp = Random.Range(10000, 20000);
         }
 	    if (unitType == UnitType.vector)
 	    {
@@ -203,14 +217,6 @@ public class UnitScript : MonoComponents
             progress.GetComponentInChildren<Image>().type = Image.Type.Filled;
         }
 	    healthMax = hp;
-	    if (owner >= 0)
-	    {
-	        if (isStructure && unitType!=UnitType.blackHole)
-	        {
-	            forcesScript.structures.Add(gameObject);
-	        }
-	        forcesScript.units.Add(gameObject);
-	    }
         if (unitType == UnitType.artillery || unitType == UnitType.capital) transform.RotateAround(transform.position, transform.forward, Random.Range(0.0f,360f));
 	}
 
@@ -299,7 +305,23 @@ public class UnitScript : MonoComponents
         }
         
         if (productionQueue != null) updateQueue();
-        if ((hp<=0)&&(!isStructure)) Destroy(gameObject);
+        if (hp <= 0)
+        {
+            if (isStructure)
+            {
+                textStatus.transform.FindChild("Text").GetComponent<Text>().text = "Desolate";
+                renderer.color = new Color(200,200,200);
+                forcesScript.structures.Remove(gameObject);
+                owner = -1;
+                unitType = UnitType.planet;
+                hp = healthMax;
+                textStatus.transform.FindChild("Status").GetComponent<Text>().text = "";
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
     }
 
 	void FixedUpdate () {
@@ -521,7 +543,6 @@ public class UnitScript : MonoComponents
 
     public void checkLife()
     {
-        //todo add fancy explosion, ondestroy event
         if ((hp<=0)&&(!isStructure)) Destroy(gameObject);
         if (hp < 0) hp = 0;
     }
@@ -557,7 +578,6 @@ public class UnitScript : MonoComponents
         //do when thinking
         //todo list forces
         if (playerScript!=null) unselect();
-        Debug.Log("wat");
         if (unitType == UnitType.vector || unitType == UnitType.miner)
         {
             forcesScript.resSecondary--;
@@ -567,6 +587,17 @@ public class UnitScript : MonoComponents
             if (target!=null) target.unassign_noremove(gameObject);
         }
         if (isMineable) markerScript.Remove();
+        if (hp <= 0)
+        {
+            if (unitType == UnitType.vector || unitType == UnitType.fighter)
+            {
+                Instantiate(Resources.Load("Prefabs/SmallExplosion", typeof(GameObject)), transform.position, Quaternion.identity);
+            }
+            else
+            {
+                Instantiate(Resources.Load("Prefabs/DestoryExplosion", typeof(GameObject)), transform.position, Quaternion.identity);   
+            }
+        }
     }
 
     public float Gather()
@@ -729,6 +760,7 @@ public class UnitScript : MonoComponents
                             rText = "";
                             break;
                     }
+                    healthMax = hp;
                 }
                 else
                 {
@@ -792,6 +824,7 @@ public class UnitScript : MonoComponents
             planetScript.setOwner(owner);
             forcesScript.structures.Add(planet);
             planetScript.startBuildingPlanet(UnitType.basePlanet);
+            planet.GetComponent<SpriteRenderer>().color=Color.white;
         }
         if (planetScript.unitType == UnitType.basePlanet && planetScript.owner == owner && planetScript.isLocked)
         {

@@ -11,6 +11,7 @@ public class MarkerScript : MonoComponents {
     public UnitScript parentScript=null;
     public bool hasParent = false;
     public float orbit=10.0f;
+    public bool persistent = false;
 
     private Vector3 previousPos;
 
@@ -28,8 +29,9 @@ public class MarkerScript : MonoComponents {
         private float radius = 2.0f; //todo set in contructor (for planets and stuff, later add boolean if supposed to scale)
         private bool isAgile;
 
-        public Position(GameObject which, UnitScript whereScript,Transform mt,float radiusScale=-1.0f,bool forceCircular=false)
+        public Position(GameObject which, UnitScript whereScript,Transform mt,float radiusScale=-1.0f,bool forceCircular=false,float _radius=2.0f)
         {
+            radius = _radius;
             if (radiusScale < 0f)
             {
                 speed = which.GetComponent<UnitScript>().speedMax*10;
@@ -161,7 +163,7 @@ public class MarkerScript : MonoComponents {
     {
         if (parentScript != null) hasParent = true;
         if (hasParent && parentScript==null) Remove();
-        if (parentScript==null && positions.Count==0) Destroy(gameObject);
+        if (parentScript==null && positions.Count==0 && !persistent) Remove();
     }
 
     void LateUpdate()
@@ -181,7 +183,7 @@ public class MarkerScript : MonoComponents {
     {
         //forced - rewrites if record exists
         obj.GetComponent<UnitScript>().targetScriptList.Insert(0,this);
-        positions[obj] = new Position(obj, parentScript, gameObject.GetComponent<Transform>());
+        positions[obj] = new Position(obj, parentScript, gameObject.GetComponent<Transform>(), -1, false, Mathf.Log(positions.Count+1)*2+1);
         if (obj.GetComponent<UnitScript>().capital)
         {
             capitalCount++;
@@ -212,7 +214,7 @@ public class MarkerScript : MonoComponents {
             }
             obj.GetComponent<UnitScript>().targetScriptList.Add(this);    
         }
-        positions.Add(obj,new Position(obj,parentScript,gameObject.GetComponent<Transform>()));
+        positions.Add(obj, new Position(obj, parentScript, gameObject.GetComponent<Transform>(), -1, false, Mathf.Log(positions.Count+1)*2+1));
         if (obj.GetComponent<UnitScript>().capital)
         {
             capitalCount++;
@@ -239,10 +241,8 @@ public class MarkerScript : MonoComponents {
         {
             capitalCount--;
         }
-        Debug.Log("first");
         obj.GetComponent<UnitScript>().targetScriptList.Remove(this);
-        Debug.Log("sec");
-        if (positions.Count==0 && parentScript==null) Destroy(gameObject);
+        if (positions.Count==0 && parentScript==null && !persistent) Destroy(gameObject);
     }
 
     public void unassign_noremove(GameObject obj)
@@ -252,7 +252,7 @@ public class MarkerScript : MonoComponents {
         {
             capitalCount--;
         }
-        if (positions.Count == 0 && parentScript == null) Destroy(gameObject);
+        if (positions.Count == 0 && parentScript == null && !persistent) Destroy(gameObject);
     }
 
     public void Remove()
@@ -262,7 +262,7 @@ public class MarkerScript : MonoComponents {
             //unassign_noremove(obj.Key);
             obj.Key.GetComponent<UnitScript>().targetScriptList.Remove(this);
         }
-        Destroy(gameObject);
+        if (!persistent) Destroy(gameObject);
     }
 
 }

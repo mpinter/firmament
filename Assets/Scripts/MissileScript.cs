@@ -72,6 +72,11 @@ public class MissileScript : MonoComponents
 
 	void Update ()
 	{
+	    if (target == null)
+	    {
+	        Destroy(gameObject);
+	        return;
+	    }
 	    if (phaser)
 	    {
             Vector3 direction = 0.2f*Vector3.Normalize((target.GetComponent<Transform>().position - transform.position));

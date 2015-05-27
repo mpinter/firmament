@@ -59,12 +59,50 @@ public class PlayerScript : ForcesScript {
 
     void DrawLines()
     {
+        //since this is relatively cheap enough and requires less thinking than removing only the required ones
+        foreach (var unit in selectedDraw.Keys.ToArray())
+        {
+            if (unit == null)
+            {
+                Destroy(selectedDraw[unit]);
+                selectedDraw.Remove(unit);
+                selected.Remove(unit);
+                asteroidMarkers.Remove(unit);
+                continue;
+            }
+            if ((!selected.Contains(unit)) || (unit.GetComponent<UnitScript>().targetScriptList.Count == 0))
+            {
+                Destroy(selectedDraw[unit]);
+                selectedDraw.Remove(unit);
+                selected.Remove(unit);
+                if (asteroidMarkers.ContainsKey(unit) && asteroidMarkers[unit] == null)
+                {
+                    asteroidMarkers.Remove(unit);
+                }
+                continue;
+            }
+            if (unit.GetComponent<UnitScript>().targetScriptList[0]==null)
+            {
+                Destroy(selectedDraw[unit]);
+                selectedDraw.Remove(unit);
+                selected.Remove(unit);
+                if (asteroidMarkers.ContainsKey(unit) && asteroidMarkers[unit] == null)
+                {
+                    asteroidMarkers.Remove(unit);
+                }
+                continue;
+            }
+            if (asteroidMarkers.ContainsKey(unit) && asteroidMarkers[unit] == null)
+            {
+                asteroidMarkers.Remove(unit);
+                continue;
+            }
+        }
         foreach (var unit in selected)
         {
             if (unit.GetComponent<UnitScript>().isMineable)
             {
                 //draw all miners
-                Gizmos.color = Color.yellow;
                 foreach (var asteroidMarker in asteroidMarkers)
                 {
                     if (!selectedDraw.ContainsKey(asteroidMarker.Key))
@@ -74,10 +112,20 @@ public class PlayerScript : ForcesScript {
                     selectedDraw[asteroidMarker.Key].GetComponent<LineRenderer>().SetColors(Color.yellow, Color.yellow);
                 }
             }
-            if (!unit.GetComponent<UnitScript>().isStructure)
+            /*if (unit.GetComponent<UnitScript>().isStructure && unit.GetComponent<UnitScript>().rally != null)
             {
-                foreach (var target in unit.GetComponent<UnitScript>().targetScriptList)
-                {
+                GameObject target = unit.GetComponent<UnitScript>().rally.gameObject;
+                if (!selectedDraw.ContainsKey(unit))
+                    selectedDraw[unit] = (Instantiate(Resources.Load("Prefabs/Line", typeof(GameObject)) as GameObject));
+                selectedDraw[unit].GetComponent<LineRenderer>().SetPosition(0, target.transform.position);
+                selectedDraw[unit].GetComponent<LineRenderer>().SetPosition(1, unit.transform.position);
+                selectedDraw[unit].GetComponent<LineRenderer>().SetColors(Color.yellow, Color.yellow);
+
+            } else */if (!unit.GetComponent<UnitScript>().isStructure)
+            {
+                if (unit.GetComponent<UnitScript>().targetScriptList.Count == 0) continue;
+                    MarkerScript target = unit.GetComponent<UnitScript>().targetScriptList[0];
+                    if (target == null) continue;
                     if (!target.positions.ContainsKey(unit)) continue; //in case errors should happen, silently ignore
                     Color color;
                     if (target.positions[unit].attack)
@@ -93,18 +141,10 @@ public class PlayerScript : ForcesScript {
                     selectedDraw[unit].GetComponent<LineRenderer>().SetPosition(0, target.transform.position);
                     selectedDraw[unit].GetComponent<LineRenderer>().SetPosition(1, unit.transform.position);
                     selectedDraw[unit].GetComponent<LineRenderer>().SetColors(color,color);
-                }
+                
             }
         }
-        //since this is relatively cheap enough and requires less thinking than removing only the required ones
-        foreach (var unit in selectedDraw.Keys.ToArray())
-        {
-            if (!selected.Contains(unit))
-            {
-                Destroy(selectedDraw[unit]);
-                selectedDraw.Remove(unit);
-            }
-        }
+        
     }
 
     void OnGUI()

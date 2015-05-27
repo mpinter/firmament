@@ -20,10 +20,15 @@ public class MasterScript : MonoBehaviour
 	
 	void Update () {
         if (hostileHole.GetComponent<UnitScript>().hp<0.0f) Camera.main.gameObject.GetComponent<CameraZoomScript>().Accomplished();
+        if (friendlyHole.GetComponent<UnitScript>().hp < 0.0f) Camera.main.gameObject.GetComponent<CameraZoomScript>().Lost();
 	    if (Input.GetKeyDown(KeyCode.X))
 	    {
 	        Application.Quit();
 	    }
+        if (Input.GetKeyDown(KeyCode.F10))
+        {
+            Application.LoadLevel("level");
+        }
 	}
 
     void LateUpdate()

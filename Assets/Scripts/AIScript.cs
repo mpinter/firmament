@@ -7,12 +7,17 @@ public class AIScript : ForcesScript
 {
 
     public GameObject player;
+    public GameObject playerHole;
+    private GameObject holeMarker;
     public float actionCooldown=0.0f;
     public float buildCooldown = 0.0f;
     public bool active=true;
 
 	// Use this for initialization
 	void Start () {
+        holeMarker = (GameObject)Instantiate(Resources.Load("Prefabs/Marker", typeof(GameObject)));
+	    holeMarker.GetComponent<Transform>().position = playerHole.GetComponent<Transform>().position;
+	    holeMarker.GetComponent<MarkerScript>().persistent = true;
 	}
 	
 	// Update is called once per frame
@@ -26,13 +31,33 @@ public class AIScript : ForcesScript
 	        {
                 GameObject marker = (GameObject)Instantiate(Resources.Load("Prefabs/Marker", typeof(GameObject)));
 	            marker.GetComponent<Transform>().position = player.GetComponent<PlayerScript>().structures.ElementAt(Random.Range(0,player.GetComponent<PlayerScript>().structures.Count)).transform.position;
-	            foreach (var unit in units)
+	            foreach (var unit in units.ToArray())
 	            {
-	                if (unit.GetComponent<UnitScript>().isStructure) continue; 
-	                if (Random.Range(0.0f, 1.0f) > 0.8f)
+	                if (Random.Range(0.0f, 1.0f) > 0.5f) continue;
+	                if (unit == null)
 	                {
-	                    marker.GetComponent<MarkerScript>().assign(unit,false);
-	                    marker.GetComponent<MarkerScript>().positions[unit].attack = true;
+	                    units.Remove(unit);
+	                    continue;
+	                }
+	                if (unit.GetComponent<UnitScript>().isStructure) continue; //fixed, no longer needed.. but afraid to remove now :)
+                    if (unit.GetComponent<UnitScript>().targetScriptList.Count > 0 && unit.GetComponent<UnitScript>().targetScriptList[0].positions.ContainsKey(unit) && unit.GetComponent<UnitScript>().targetScriptList[0].positions[unit].attack) continue;
+	                if (unit.GetComponent<UnitScript>().unitType == UnitScript.UnitType.vector)
+	                {
+	                    holeMarker.GetComponent<MarkerScript>().assign(unit,false);
+                        holeMarker.GetComponent<MarkerScript>().positions[unit].attack = true;
+	                } 
+	                else
+	                {
+	                    if (Random.Range(0.0f, 1.0f) > 0.5f)
+	                    {
+	                        marker.GetComponent<MarkerScript>().assign(unit, false);
+	                        marker.GetComponent<MarkerScript>().positions[unit].attack = true;
+	                    }
+	                    else
+	                    {
+                            holeMarker.GetComponent<MarkerScript>().assign(unit, false);
+                            holeMarker.GetComponent<MarkerScript>().positions[unit].attack = true;
+	                    }
 	                }
 	            }
 	        }

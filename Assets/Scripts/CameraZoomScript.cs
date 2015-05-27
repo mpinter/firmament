@@ -10,7 +10,7 @@ public class CameraZoomScript : MonoBehaviour {
     public float targetOrtho;
     public float smoothSpeed = 20.0f;
     public float minOrtho = 1.0f;
-    public float maxOrtho = 100.0f;
+    public float maxOrtho = 75.0f;
 
     public float keyScrollSpeed = 10.0f;
     public float mouseScrollSpeed = 5.0f;
@@ -47,6 +47,16 @@ public class CameraZoomScript : MonoBehaviour {
         textSmall.GetComponentInChildren<Text>().CrossFadeAlpha(1.0f, 5.0f, false);
         textBig.GetComponentInChildren<Text>().enabled = true;
         textBig.GetComponentInChildren<Text>().text = "Mission accomplished.";
+        textBig.GetComponentInChildren<Text>().CrossFadeAlpha(1.0f, 5.0f, false);
+    }
+
+    public void Lost()
+    {
+        blackCover.GetComponentInChildren<Image>().CrossFadeAlpha(1.0f, 5.0f, false);
+        textSmall.GetComponentInChildren<Text>().enabled = true;
+        textSmall.GetComponentInChildren<Text>().CrossFadeAlpha(1.0f, 5.0f, false);
+        textBig.GetComponentInChildren<Text>().enabled = true;
+        textBig.GetComponentInChildren<Text>().text = "Mission failed.";
         textBig.GetComponentInChildren<Text>().CrossFadeAlpha(1.0f, 5.0f, false);
     }
 
