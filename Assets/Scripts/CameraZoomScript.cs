@@ -18,6 +18,9 @@ public class CameraZoomScript : MonoBehaviour {
     public float sceneLimitX = 450;
     public float sceneLimitY = 280;
 
+    //quick dirty fix for second camera to not move when main camera isn't moving
+    public float lastMove = 0.0f;
+
     public bool minimapActive=true;
 
     public GameObject minimapCamera;
@@ -120,19 +123,19 @@ public class CameraZoomScript : MonoBehaviour {
         {
             xChange += keyScrollSpeed;
         }
-        if (Input.mousePosition.y==Screen.height)
+        if (Screen.height - Input.mousePosition.y < 5)
         {
             yChange += mouseScrollSpeed;
         }
-        if (Input.mousePosition.y == 0)
+        if (Input.mousePosition.y < 5)
         {
             yChange -= mouseScrollSpeed;
         }
-        if (Input.mousePosition.x == Screen.width)
+        if (Screen.width - Input.mousePosition.x < 5)
         {
             xChange += mouseScrollSpeed;
         }
-        if (Input.mousePosition.x == 0)
+        if (Input.mousePosition.x < 5)
         {
             xChange -= mouseScrollSpeed;
         }
@@ -151,6 +154,8 @@ public class CameraZoomScript : MonoBehaviour {
         x = (upperx > sceneLimitX) ? x - (upperx-sceneLimitX) : x;
         y = (lowery < 0) ? position.y - lowery : position.y;
         y = (uppery > sceneLimitY) ? y - (uppery - sceneLimitY) : y;
-        Camera.main.transform.position = new Vector3(x,y, Camera.main.transform.position.z); 
+        Vector3 move = new Vector3(x, y, Camera.main.transform.position.z);
+        lastMove = Vector3.Distance(Camera.main.transform.position, move);
+        Camera.main.transform.position = move;
     }
 }

@@ -181,7 +181,7 @@ public class UnitScript : MonoComponents
         }
         else if (isStructure)
         {
-            hp = Random.Range(10000, 20000);
+            hp = Random.Range(30000, 40000);
         }
 	    if (unitType == UnitType.vector)
 	    {
@@ -335,7 +335,7 @@ public class UnitScript : MonoComponents
             forcesScript.resPrimary += productionQueue.Count;
             productionQueue.Clear();
         }
-        if (!targetScriptList[0].positions[gameObject].isCircular) targetScriptList.Clear();
+        if (targetScriptList.Count > 0 && targetScriptList[0].positions[gameObject] != null && !targetScriptList[0].positions[gameObject].isCircular) targetScriptList.Clear();
     }
 
     private void updateQueue()

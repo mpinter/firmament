@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting;
 using UnityEngine;
@@ -50,6 +51,8 @@ public class PlayerScript : ForcesScript {
         {
             foreach (var unit in selected)
             {
+                if (unit == null) continue; //wat?
+                if (unit.GetComponent<UnitScript>().unitType == UnitScript.UnitType.blackHole) continue;
                 if (!(unit.GetComponent<UnitScript>().isTransforming || unit.GetComponent<UnitScript>().isLocked))
                     unit.GetComponent<UnitScript>().Cancel();
             }
@@ -59,18 +62,24 @@ public class PlayerScript : ForcesScript {
 
     void DrawLines()
     {
+        //on a scale of 0 to retarded, this code snippet would be your autistic cousin (just as retarded as unity's handling of destroyed units)
+        //for future reference - never use GameObject as dictionary key, the hash value gets fucked up when the unit is destroyed
+        foreach (KeyValuePair<GameObject,GameObject> wat in selectedDraw)
+        {
+            if (wat.Key==null) Destroy(wat.Value);
+        }
         //since this is relatively cheap enough and requires less thinking than removing only the required ones
         foreach (var unit in selectedDraw.Keys.ToArray())
         {
             if (unit == null)
             {
-                Destroy(selectedDraw[unit]);
+                //Destroy(selectedDraw[unit]);
                 selectedDraw.Remove(unit);
                 selected.Remove(unit);
                 asteroidMarkers.Remove(unit);
                 continue;
             }
-            if ((!selected.Contains(unit)) || (unit.GetComponent<UnitScript>().targetScriptList.Count == 0))
+            if ((!selected.Contains(unit)) || (unit.GetComponent<UnitScript>().targetScriptList.Count == 0 && !unit.GetComponent<UnitScript>().isMineable))
             {
                 Destroy(selectedDraw[unit]);
                 selectedDraw.Remove(unit);
@@ -80,8 +89,8 @@ public class PlayerScript : ForcesScript {
                     asteroidMarkers.Remove(unit);
                 }
                 continue;
-            }
-            if (unit.GetComponent<UnitScript>().targetScriptList[0]==null)
+            } 
+            if (unit.GetComponent<UnitScript>().targetScriptList.Count > 0 && (unit.GetComponent<UnitScript>().targetScriptList[0] == null || (unit.GetComponent<UnitScript>().targetScriptList[0].parentScript!=null && unit.GetComponent<UnitScript>().targetScriptList[0].parentScript.gameObject == null)))
             {
                 Destroy(selectedDraw[unit]);
                 selectedDraw.Remove(unit);
@@ -124,24 +133,24 @@ public class PlayerScript : ForcesScript {
             } else */if (!unit.GetComponent<UnitScript>().isStructure)
             {
                 if (unit.GetComponent<UnitScript>().targetScriptList.Count == 0) continue;
-                    MarkerScript target = unit.GetComponent<UnitScript>().targetScriptList[0];
-                    if (target == null) continue;
-                    if (!target.positions.ContainsKey(unit)) continue; //in case errors should happen, silently ignore
-                    Color color;
-                    if (target.positions[unit].attack)
-                    {
-                        color = Color.red;
-                    }
-                    else
-                    {
-                        color = Color.white;
-                    }
-                    if (!selectedDraw.ContainsKey(unit))
-                        selectedDraw[unit] = (Instantiate(Resources.Load("Prefabs/Line", typeof(GameObject)) as GameObject));
-                    selectedDraw[unit].GetComponent<LineRenderer>().SetPosition(0, target.transform.position);
-                    selectedDraw[unit].GetComponent<LineRenderer>().SetPosition(1, unit.transform.position);
-                    selectedDraw[unit].GetComponent<LineRenderer>().SetColors(color,color);
                 
+                MarkerScript target = unit.GetComponent<UnitScript>().targetScriptList[0];
+                if (target == null) continue;
+                if (!target.positions.ContainsKey(unit)) continue; //in case errors should happen, silently ignore
+                Color color;
+                if (target.positions[unit].attack)
+                {
+                    color = Color.red;
+                }
+                else
+                {
+                    color = Color.white;
+                }
+                if (!selectedDraw.ContainsKey(unit))
+                    selectedDraw[unit] = (Instantiate(Resources.Load("Prefabs/Line", typeof(GameObject)) as GameObject));
+                selectedDraw[unit].GetComponent<LineRenderer>().SetPosition(0, target.transform.position);
+                selectedDraw[unit].GetComponent<LineRenderer>().SetPosition(1, unit.transform.position);
+                selectedDraw[unit].GetComponent<LineRenderer>().SetColors(color,color);
             }
         }
         
@@ -207,7 +216,7 @@ public class PlayerScript : ForcesScript {
     void LateUpdate()
     {
         //todo pretify
-        if (Input.GetMouseButtonUp(0) && (CameraScript.downTime < 0.1f) && !selectHit)
+        if (Input.GetMouseButtonUp(0) && (CameraScript.downTime < 0.15f) && !selectHit)
         {
             float x = Input.mousePosition.x - (Screen.width - 400);
             float y = Input.mousePosition.y - (Screen.height - 258);
@@ -240,7 +249,7 @@ public class PlayerScript : ForcesScript {
                 selected.Clear();    
             }
         }
-        if (Input.GetMouseButtonUp(1) && (CameraScript.downTime < 0.1f) && !selectHit && selected.Count>0 && !performingAction)
+        if (Input.GetMouseButtonUp(1) && (CameraScript.downTime < 0.15f) && !selectHit && selected.Count>0 && !performingAction)
         {
             
             //todo markers display only if their linked units are selected - check this on slection change - gethashcode

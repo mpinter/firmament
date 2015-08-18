@@ -10,7 +10,7 @@ public class UnitRaycastScript : MonoComponents
     public float attackRange=5.0f;
     public int maxInterval = 6000;
     public int avoidInterval = 10000;
-    public int attackInterval = 20;
+    public int attackInterval = 5;
     public int aggroInterval = 60;
     private int currentInterval = 0;
     private List<KeyValuePair<float, float>> ranges = new List<KeyValuePair<float, float>>();
@@ -29,7 +29,7 @@ public class UnitRaycastScript : MonoComponents
 	        case UnitScript.UnitType.vector:
                 ranges.Add(new KeyValuePair<float, float>(0.0f,0.0f));
                 currentCd.Add(1.0f);
-	            weaponCd = (1.0f);
+	            weaponCd = (0.5f);
                 guns.Add("Prefabs/Phaserz");
 	            break;
             case UnitScript.UnitType.artillery:
@@ -46,7 +46,7 @@ public class UnitRaycastScript : MonoComponents
                 ranges.Add(new KeyValuePair<float, float>(180 + 15.0f, 180 + 65.0f));
                 ranges.Add(new KeyValuePair<float, float>(180 + 65.0f, 180 + 115.0f));
                 ranges.Add(new KeyValuePair<float, float>(180 + 115.0f, 180 + 165.0f));
-	            weaponCd = 1.0f;
+	            weaponCd = 0.5f;
 	            for (int i = 0; i < 6; i++)
 	            {
 	                currentCd.Add(1.0f);
@@ -71,15 +71,12 @@ public class UnitRaycastScript : MonoComponents
                         ranges.Add(new KeyValuePair<float, float>(290.0f, 360.0f));
 	                }
 	                currentCd.Add(weaponCd);
-	                switch (Random.Range(0,3))
+	                switch (Random.Range(0,2))
 	                {
                         case 0:
                             guns.Add("Prefabs/HugeMissile");
 	                        break;
                         case 1:
-                            guns.Add("Prefabs/Phaserz");
-	                        break;
-                        case 2:
                             guns.Add("Prefabs/Laserz");
 	                        break;
 	                }   

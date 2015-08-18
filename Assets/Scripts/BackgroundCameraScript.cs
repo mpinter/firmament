@@ -14,6 +14,7 @@ public class BackgroundCameraScript : MonoBehaviour {
 
     private Camera camera;
 
+    //public Camera mainCamera;
     void Start()
     {
         camera=GetComponent<Camera>();
@@ -68,6 +69,6 @@ public class BackgroundCameraScript : MonoBehaviour {
             xChange -= mouseScrollSpeed;
         }
         float scrollOrtho = Mathf.Clamp(targetOrtho / 10, 1, 10);
-        camera.transform.position = new Vector3(camera.transform.position.x + xChange * scrollOrtho * Time.deltaTime,camera.transform.position.y + yChange * scrollOrtho * Time.deltaTime, camera.transform.position.z);
+        if (Camera.main.GetComponent<CameraZoomScript>().lastMove>0.2f) camera.transform.position = new Vector3(camera.transform.position.x + xChange * scrollOrtho * Time.deltaTime,camera.transform.position.y + yChange * scrollOrtho * Time.deltaTime, camera.transform.position.z);
     }
 }

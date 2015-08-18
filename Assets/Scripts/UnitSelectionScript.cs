@@ -49,7 +49,7 @@ public class UnitSelectionScript : MonoComponents
     public GameObject checkClickSelect(int button)
     {
         //race conditions in if, doesn't matter had snoo-snoo
-        if ((Input.GetMouseButtonUp(button)) && (CameraScript.downTime < 0.1f))
+        if ((Input.GetMouseButtonUp(button)) && (CameraScript.downTime < 0.15f))
         {
             Vector3 clickPos = (CameraScript.startClick == -Vector3.one)
                 ? Camera.main.ScreenToWorldPoint(CameraScript.lastClickPos)
